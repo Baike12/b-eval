@@ -71,9 +71,16 @@ Docs/
 ├── README.md                     # Index of all documentation
 ├── Feature-Template.md           # Template for feature requirement documents
 ├── Fix-Template.md               # Template for bug fix documents
-├── 01..08 (functional design)    # Functional-level design (see §2.3)
-├── Features/                     # Feature requirement documents
-│   └── FEAT-<nnn>-<slug>.md
+├── Features/                     # Feature requirement documents — the functional design lives here
+│   ├── FEAT-001-platform-scope-and-positioning.md
+│   ├── FEAT-002-capability-taxonomy-and-task-system.md
+│   ├── FEAT-003-evaluation-execution-and-orchestration.md
+│   ├── FEAT-004-scoring-and-metrics.md
+│   ├── FEAT-005-reporting-analysis-and-comparison.md
+│   ├── FEAT-006-security-robustness-and-quality-assurance.md
+│   ├── FEAT-007-user-flows-and-feature-inventory.md
+│   ├── FEAT-008-delivery-roadmap-and-acceptance-criteria.md
+│   └── FEAT-009-unified-agent-adapter-protocol.md
 ├── Fix/                          # Bug fix documents
 │   └── FIX-<nnn>-<slug>.md
 ├── Tech Design/                  # Technical design documents
@@ -81,6 +88,11 @@ Docs/
 └── Test Report/                  # Verification / test report documents
     └── TR-<nnn>-<slug>.md
 ```
+
+**The functional design is the body of `Docs/Features/`.** There is no separate chapter
+series: each capability area of the platform is one Feature document, written to
+`Docs/Feature-Template.md`. `FEAT-007` holds the functional requirement inventory that the
+other features reference.
 
 ### 2.1 Templates
 
@@ -97,6 +109,12 @@ Docs/
 | `Docs/Features/FEAT-*.md` | Its **Tech Design** document **and** its **Test Report** document |
 | `Docs/Fix/FIX-*.md` | Its **Test Report** document |
 | `Docs/Tech Design/TD-*.md` | The feature or fix it implements |
+
+A Feature document that has not been designed or verified yet **must still carry a
+`References` section**, stating `Tech Design: Not yet created.` and
+`Test Report: Not yet created.` for each missing document. An explicit gap is acceptable;
+a missing section is not. Once the feature reaches `Implemented`, both entries must be
+live links.
 
 References use **Markdown reference-style links** with link definitions at the bottom of the file:
 
@@ -120,7 +138,7 @@ Two identifier families coexist and must not be confused:
 
 | Prefix | Meaning | Defined in |
 |---|---|---|
-| `F-<module>-<nn>` | Functional requirement (capability that must exist) | Functional design §7 |
+| `F-<module>-<nn>` | Functional requirement (capability that must exist) | `Docs/Features/FEAT-007` |
 | `FEAT-<nnn>` | Feature document (a unit of delivered work) | `Docs/Features/` |
 | `FIX-<nnn>` | Bug fix document | `Docs/Fix/` |
 | `TD-<nnn>` | Technical design document | `Docs/Tech Design/` |

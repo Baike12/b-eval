@@ -4,7 +4,7 @@
 |---|---|
 | **ID** | TD-001 |
 | **Status** | Draft |
-| **Implements** | [FEAT-001 Unified Agent Adapter Protocol](../Features/FEAT-001-unified-agent-adapter-protocol.md) |
+| **Implements** | [FEAT-009 Unified Agent Adapter Protocol](../Features/FEAT-009-unified-agent-adapter-protocol.md) |
 | **Owner** | Platform team |
 | **Created** | 2026-10-22 |
 | **Last Updated** | 2026-10-22 |
@@ -144,8 +144,8 @@ Verified by [TR-001 Unified Agent Adapter Protocol][tr-001].
 
 ## References
 
-- Feature: [FEAT-001 Unified Agent Adapter Protocol][feat-001]
+- Feature: [FEAT-009 Unified Agent Adapter Protocol][feat-009]
 - Test Report: [TR-001 Unified Agent Adapter Protocol][tr-001]
 
-[feat-001]: <../Features/FEAT-001-unified-agent-adapter-protocol.md>
+[feat-009]: <../Features/FEAT-009-unified-agent-adapter-protocol.md>
 [tr-001]: <../Test Report/TR-001-unified-agent-adapter-protocol.md>

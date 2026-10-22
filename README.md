@@ -6,7 +6,7 @@ Agent evaluation platform.
 
 | Stage | Content | Where |
 |---|---|---|
-| Functional design | What the system does (no implementation) | [`Docs/`](./Docs/README.md) |
+| Functional design | What the system does (no implementation) | [`Docs/Features/`](./Docs/Features/) |
 | Delivery documents | Features, fixes, technical design, test reports | [`Docs/Features/`](./Docs/Features/), [`Docs/Tech Design/`](<./Docs/Tech Design/>), [`Docs/Test Report/`](<./Docs/Test Report/>), [`Docs/Fix/`](./Docs/Fix/) |
 | Technical design | Architecture and implementation | In progress |
 | Implementation | Not started | — |
@@ -27,8 +27,9 @@ b-eval/
 │   ├── README.md            # Index of all documentation
 │   ├── Feature-Template.md  # Template for Docs/Features/
 │   ├── Fix-Template.md      # Template for Docs/Fix/
-│   ├── 01..08               # Functional design chapters
-│   ├── Features/            # FEAT-<nnn>-<slug>.md
+│   ├── Features/            # FEAT-<nnn>-<slug>.md — the functional design lives here
+│   │   ├── FEAT-001..008    # Platform capability areas
+│   │   └── FEAT-009         # Agent adapter protocol (deep dive)
 │   ├── Fix/                 # FIX-<nnn>-<slug>.md
 │   ├── Tech Design/         # TD-<nnn>-<slug>.md
 │   └── Test Report/         # TR-<nnn>-<slug>.md

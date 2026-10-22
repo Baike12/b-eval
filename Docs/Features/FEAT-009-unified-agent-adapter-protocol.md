@@ -1,14 +1,15 @@
-# FEAT-001: Unified Agent Adapter Protocol
+# FEAT-009: Unified Agent Adapter Protocol
 
 | Field | Value |
 |---|---|
-| **ID** | FEAT-001 |
+| **ID** | FEAT-009 |
 | **Status** | Draft |
 | **Owner** | Platform team |
 | **Priority** | P0 |
 | **Implements** | `F-AGT-01`, `F-AGT-02`, `F-AGT-03`, `F-AGT-04` |
 | **Created** | 2026-10-22 |
 | **Last Updated** | 2026-10-22 |
+| **Source** | Adapter protocol deep-dive, authored with the delivery-document structure |
 
 ## Summary
 

@@ -79,7 +79,7 @@ The trial record showed `action_sequence: []`, `protocol_violations: []` and ter
 ## References
 
 - Test Report: [TR-002 Black-box CLI Empty Action Sequence Fix][tr-002]
-- Related Feature: [FEAT-001 Unified Agent Adapter Protocol][feat-001]
+- Related Feature: [FEAT-009 Unified Agent Adapter Protocol][feat-009]
 
 ## Open Questions
 
@@ -88,4 +88,4 @@ The trial record showed `action_sequence: []`, `protocol_violations: []` and ter
 | 1 | Should a black-box agent that legitimately produces no observable output on a given step be distinguishable from one that fails to start? | Platform team | No |
 
 [tr-002]: <../Test Report/TR-002-blackbox-cli-empty-action-sequence-fix.md>
-[feat-001]: <../Features/FEAT-001-unified-agent-adapter-protocol.md>
+[feat-009]: <../Features/FEAT-009-unified-agent-adapter-protocol.md>

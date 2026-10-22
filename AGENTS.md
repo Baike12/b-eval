@@ -18,10 +18,15 @@ Project-level working rules for this repository.
 | You are writing | Put it in | Template |
 |---|---|---|
 | A new capability / requirement | `Docs/Features/FEAT-<nnn>-<slug>.md` | `Docs/Feature-Template.md` |
+| A change to the functional design | The matching `Docs/Features/FEAT-*.md` document | `Docs/Feature-Template.md` |
 | A defect and its fix | `Docs/Fix/FIX-<nnn>-<slug>.md` | `Docs/Fix-Template.md` |
 | How something is built | `Docs/Tech Design/TD-<nnn>-<slug>.md` | — |
 | Proof that something works | `Docs/Test Report/TR-<nnn>-<slug>.md` | — |
-| Functional-level design changes | The matching `Docs/0*.md` chapter | — |
+
+**The functional design is the body of `Docs/Features/`.** There is no separate chapter
+series — each capability area of the platform is one Feature document. `FEAT-007` holds the
+functional requirement inventory (`F-XXX-NN`) that the other features declare in their
+`Implements` field.
 
 ## Mandatory Cross-References
 

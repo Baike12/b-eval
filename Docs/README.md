@@ -11,34 +11,45 @@
 
 ## 1. Document Index
 
-### 1.1 Functional design
+### 1.1 Functional design — the Features
 
-| Document | Content | Question it answers |
+The functional design *is* the body of [`Features/`](./Features/). Each capability area of the
+platform is one Feature document, written to [`Feature-Template.md`](./Feature-Template.md).
+
+| Feature | Content | Question it answers |
 |---|---|---|
-| [01 Project Overview](./01-project-overview.md) | Background, positioning, goals, non-goals, roles, core concept model | Why build it, what it is |
-| [02 Capability Dimensions and Task System](./02-capability-dimensions-and-task-system.md) | Capability taxonomy, task metadata, task set partitioning, difficulty tiers, environment isolation | What is measured, how tasks are organised |
-| [03 Evaluation Execution and Orchestration](./03-evaluation-execution-and-orchestration.md) | Evaluation flow, agent adapter protocol, interaction contract, budget, concurrency, resume, traces | How a run works |
-| [04 Scoring and Metrics](./04-scoring-and-metrics.md) | Scorer taxonomy, combination rules, three-state verdicts, metric formulas, aggregation | How results are scored and summarised |
-| [05 Reporting, Analysis and Comparison](./05-reporting-analysis-and-comparison.md) | Artefact inventory, single-run report, comparison views, error attribution, leaderboard | How results are read and compared |
-| [06 Security, Robustness and Quality Assurance](./06-security-robustness-and-quality-assurance.md) | Anti-cheating, adversarial evaluation, task self-checks, judge calibration, contamination | Why the scores can be trusted |
-| [07 User Flows and Feature Inventory](./07-user-flows-and-feature-inventory.md) | User journeys, feature inventory, screens and interaction, permission model | How users work with it |
-| [08 Roadmap and Acceptance](./08-roadmap-and-acceptance.md) | Milestones, acceptance criteria, risk register | How it gets built, how it is judged done |
+| [FEAT-001 Platform Scope and Positioning](./Features/FEAT-001-platform-scope-and-positioning.md) | Background, positioning, goals, non-goals, roles, core concept model | Why build it, what it is |
+| [FEAT-002 Capability Taxonomy and Task System](./Features/FEAT-002-capability-taxonomy-and-task-system.md) | Capability taxonomy, task metadata, task set partitioning, difficulty tiers, environment isolation | What is measured, how tasks are organised |
+| [FEAT-003 Evaluation Execution and Orchestration](./Features/FEAT-003-evaluation-execution-and-orchestration.md) | Evaluation flow, agent adapter protocol, interaction contract, budget, concurrency, resume, traces | How a run works |
+| [FEAT-004 Scoring and Metrics](./Features/FEAT-004-scoring-and-metrics.md) | Scorer taxonomy, combination rules, three-state verdicts, metric formulas, aggregation | How results are scored and summarised |
+| [FEAT-005 Reporting, Analysis and Comparison](./Features/FEAT-005-reporting-analysis-and-comparison.md) | Artefact inventory, single-run report, comparison views, error attribution, leaderboard | How results are read and compared |
+| [FEAT-006 Security, Robustness and Quality Assurance](./Features/FEAT-006-security-robustness-and-quality-assurance.md) | Anti-cheating, adversarial evaluation, task self-checks, judge calibration, contamination | Why the scores can be trusted |
+| [FEAT-007 User Flows, Feature Inventory and Permissions](./Features/FEAT-007-user-flows-and-feature-inventory.md) | The `F-XXX-NN` requirement inventory, user journeys, screens and interaction, permission model | What must exist, how users work with it |
+| [FEAT-008 Delivery Roadmap and Acceptance Criteria](./Features/FEAT-008-delivery-roadmap-and-acceptance-criteria.md) | Milestones, acceptance criteria, risk register | How it gets built, how it is judged done |
+| [FEAT-009 Unified Agent Adapter Protocol](./Features/FEAT-009-unified-agent-adapter-protocol.md) | The adapter protocol as a standalone, deep-dive feature | How an agent is plugged in |
 
 ### 1.2 Delivery documents
 
 | Directory | Holds | Naming | Template |
 |---|---|---|---|
-| [`Features/`](./Features/) | Feature requirement documents | `FEAT-<nnn>-<slug>.md` | [`Feature-Template.md`](./Feature-Template.md) |
+| [`Features/`](./Features/) | Feature requirement documents — the functional design | `FEAT-<nnn>-<slug>.md` | [`Feature-Template.md`](./Feature-Template.md) |
 | [`Fix/`](./Fix/) | Bug fix documents | `FIX-<nnn>-<slug>.md` | [`Fix-Template.md`](./Fix-Template.md) |
 | [`Tech Design/`](<./Tech Design/>) | Technical design documents | `TD-<nnn>-<slug>.md` | — |
 | [`Test Report/`](<./Test Report/>) | Verification / test reports | `TR-<nnn>-<slug>.md` | — |
 
-Current contents:
+Delivery-chain status per feature:
 
 | Feature | Tech Design | Test Report |
 |---|---|---|
-| [FEAT-001 Unified Agent Adapter Protocol](./Features/FEAT-001-unified-agent-adapter-protocol.md) | [TD-001 Unified Agent Adapter Protocol](<./Tech Design/TD-001-unified-agent-adapter-protocol.md>) | [TR-001 Unified Agent Adapter Protocol](<./Test Report/TR-001-unified-agent-adapter-protocol.md>) |
-| — | — | [TR-002 Black-box CLI Empty Action Sequence Fix](<./Test Report/TR-002-blackbox-cli-empty-action-sequence-fix.md>) |
+| [FEAT-001 Platform Scope and Positioning](./Features/FEAT-001-platform-scope-and-positioning.md) | Not yet created | Not yet created |
+| [FEAT-002 Capability Taxonomy and Task System](./Features/FEAT-002-capability-taxonomy-and-task-system.md) | Not yet created | Not yet created |
+| [FEAT-003 Evaluation Execution and Orchestration](./Features/FEAT-003-evaluation-execution-and-orchestration.md) | Not yet created | Not yet created |
+| [FEAT-004 Scoring and Metrics](./Features/FEAT-004-scoring-and-metrics.md) | Not yet created | Not yet created |
+| [FEAT-005 Reporting, Analysis and Comparison](./Features/FEAT-005-reporting-analysis-and-comparison.md) | Not yet created | Not yet created |
+| [FEAT-006 Security, Robustness and Quality Assurance](./Features/FEAT-006-security-robustness-and-quality-assurance.md) | Not yet created | Not yet created |
+| [FEAT-007 User Flows, Feature Inventory and Permissions](./Features/FEAT-007-user-flows-and-feature-inventory.md) | Not yet created | Not yet created |
+| [FEAT-008 Delivery Roadmap and Acceptance Criteria](./Features/FEAT-008-delivery-roadmap-and-acceptance-criteria.md) | Not yet created | Not yet created |
+| [FEAT-009 Unified Agent Adapter Protocol](./Features/FEAT-009-unified-agent-adapter-protocol.md) | [TD-001 Unified Agent Adapter Protocol](<./Tech Design/TD-001-unified-agent-adapter-protocol.md>) | [TR-001 Unified Agent Adapter Protocol](<./Test Report/TR-001-unified-agent-adapter-protocol.md>) |
 
 | Fix | Test Report |
 |---|---|
@@ -112,6 +123,6 @@ Survey date: 2026-10-22. All reference projects are mirrored read-only into `ven
 
 ## 3. Usage Conventions
 
-- Every functional requirement carries a **unique identifier** (for example `F-RUN-01`); the full table lives in [07 User Flows and Feature Inventory](./07-user-flows-and-feature-inventory.md).
+- Every functional requirement carries a **unique identifier** (for example `F-RUN-01`); the full table lives in [FEAT-007 User Flows, Feature Inventory and Permissions](./Features/FEAT-007-user-flows-and-feature-inventory.md).
 - Every metric definition gives its **computation and its denominator**. No "roughly", no "reasonably good".
 - Upstream open-source projects referenced in this directory are named as `vendor/<owner>__<repo>` in the local mirror, so the cited evidence can be checked.

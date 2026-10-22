@@ -64,9 +64,9 @@ The defect is eliminated. The affected trial is now correctly classified, the fa
 ## References
 
 - Fix: [FIX-002 Black-box CLI Empty Action Sequence Not Flagged][fix-002]
-- Feature: [FEAT-001 Unified Agent Adapter Protocol][feat-001]
+- Feature: [FEAT-009 Unified Agent Adapter Protocol][feat-009]
 - Technical Design: [TD-001 Unified Agent Adapter Protocol][td-001]
 
 [fix-002]: <../Fix/FIX-002-blackbox-cli-empty-action-sequence-not-flagged.md>
-[feat-001]: <../Features/FEAT-001-unified-agent-adapter-protocol.md>
+[feat-009]: <../Features/FEAT-009-unified-agent-adapter-protocol.md>
 [td-001]: <../Tech Design/TD-001-unified-agent-adapter-protocol.md>
