@@ -13,26 +13,26 @@
 
 ## Summary
 
-This feature defines the end-to-end user journeys, the complete functional requirement inventory, the interface and interaction rules, and the role-based permission model of the evaluation platform. It covers the six user roles — Agent Developer, Task Author, Benchmark Maintainer, Evaluation Organizer, Reviewer and Platform Operator — from the registration of a system under test through task authoring, batch evaluation, adversarial evaluation and leaderboard publication. The single most important outcome is one unambiguous inventory of 67 functional requirements that every other feature document declares in its own `Implements` field.
+This feature defines the end-to-end user journeys, the complete functional requirement inventory, the interface and interaction rules, and the role-based permission model of the evaluation platform. It covers the six user roles — Agent Developer, Task Author, Benchmark Maintainer, Evaluation Organizer, Reviewer and Platform Operator — from the registration of a system under test through task authoring, batch evaluation, adversarial evaluation and leaderboard publication. The single most important outcome is one unambiguous inventory of 69 functional requirements that every other feature document declares in its own `Implements` field.
 
 ## Problem
 
 **Current behaviour:** The platform's modules are specified as isolated capabilities, while the behaviour that ties them together lives only in the user journeys: an integration that has not passed the access self-check would otherwise be recorded as weak capability (F-AGT-04), a report that does not lead with its confidence section misreads a platform failure as a capability failure, and a score could be re-judged by the very person who submitted it.
 
-**Pain:** Every role — Agent Developer, Task Author, Benchmark Maintainer, Evaluation Organizer, Reviewer and Platform Operator — acts through these paths, and each path only means something if the mandatory gates, the interface rules and the role separation hold. Without one shared inventory of the 67 functional requirements, every feature document would define its own boundary, and the confidence-first, explicit-exception and player/referee separation guarantees would be reinterpreted differently by each implementer.
+**Pain:** Every role — Agent Developer, Task Author, Benchmark Maintainer, Evaluation Organizer, Reviewer and Platform Operator — acts through these paths, and each path only means something if the mandatory gates, the interface rules and the role separation hold. Without one shared inventory of the 69 functional requirements, every feature document would define its own boundary, and the confidence-first, explicit-exception and player/referee separation guarantees would be reinterpreted differently by each implementer.
 
 **Evidence:** Not specified in the source design.
 
 ## Proposed Solution
 
-The platform delivers five end-to-end journeys — Agent Developer onboarding and self-test, routine regression, task authoring, batch evaluation and publication, and security-reviewer adversarial evaluation — that carry a user from the first action to a published result. Each journey is expressed as an ordered ASCII step diagram so that the sequence, the decision points and the blocking gates are unambiguous. Underneath the journeys, the 67-row functional requirement inventory fixes the module boundaries, and the interface/interaction layer plus the role-based permission matrix fixes what each screen shows and who may act on it. Every other feature document in this set points back at this inventory through its own `Implements` field.
+The platform delivers five end-to-end journeys — Agent Developer onboarding and self-test, routine regression, task authoring, batch evaluation and publication, and security-reviewer adversarial evaluation — that carry a user from the first action to a published result. Each journey is expressed as an ordered ASCII step diagram so that the sequence, the decision points and the blocking gates are unambiguous. Underneath the journeys, the 69-row functional requirement inventory fixes the module boundaries, and the interface/interaction layer plus the role-based permission matrix fixes what each screen shows and who may act on it. Every other feature document in this set points back at this inventory through its own `Implements` field.
 
 ## Scope
 
 ### In Scope
 
 - The five core user journeys and their step order, decision points and blocking gates (Agent Developer onboarding and self-test, routine regression, Task Author task creation, Evaluation Organizer batch evaluation and publication, Security Reviewer adversarial evaluation).
-- The functional requirement inventory of 67 requirements across ten modules: System Under Test Management, Tasks and Task Sets, Scorers, Evaluation Runs, Reporting and Analysis, Metrics, Security, Leaderboard and Collaboration, Human Review, and Platform Governance.
+- The functional requirement inventory of 69 requirements across ten modules: System Under Test Management, Tasks and Task Sets, Scorers, Evaluation Runs, Reporting and Analysis, Metrics, Security, Leaderboard and Collaboration, Human Review, and Platform Governance.
 - The page inventory of 14 pages with their main content and primary users.
 - The interaction principles that constrain every report, breakdown, comparison and default override.
 - The key interaction flow details for cost estimate feedback, pause and cancel, failure retry, offline rescoring, and re-judgement.
@@ -142,6 +142,7 @@ The platform delivers five end-to-end journeys — Agent Developer onboarding an
   | | F-TSK-10 | External benchmark import | Mapping + baseline re-run + tied scores |
   | | F-TSK-11 | Ingestion validation gate | Eight checks + report + blocking |
   | | F-TSK-12 | Task health audit | Saturation, abnormal failures, non-determinism, duration, difficulty drift |
+  | | F-TSK-13 | Task form declaration | environment-agentic / static-qa + form-dependent metadata contract and gates |
   | **Scorers** | F-JDG-01 | Scorer registration | Registration and versioning of the six scorer types |
   | | F-JDG-02 | Scorer combination configuration | Conjunction / disjunction / weights / partial credit |
   | | F-JDG-03 | Rubric editor | Item-based editing + weights + evidence requirements |
@@ -165,12 +166,13 @@ The platform delivers five end-to-end journeys — Agent Developer onboarding an
   | | F-RPT-06 | Trajectory viewer | Replay, filtering, side-by-side comparison, export |
   | | F-RPT-07 | Error attribution | Five-layer attribution + failure-mode clustering + manual re-judgement |
   | | F-RPT-08 | Report export | Static page, audit bundle, dataset/log bundle |
-  | **Metrics** | F-MTR-01 | Metric definition registration | The single source of truth for unified definitions |
+  | **Metrics** | F-MTR-01 | Metric registry | The single resolution point for every metric; built-in entries locked |
   | | F-MTR-02 | Aggregation method selection | macro / micro + explicit annotation |
   | | F-MTR-03 | Confidence interval | Binomial normal / Wilson / bootstrap resampling |
   | | F-MTR-04 | Coverage and NA handling | Effective task coverage displayed explicitly |
   | | F-MTR-05 | Efficiency and cost metrics | Steps, token, cost, invalid action rate, repetition rate |
   | | F-MTR-06 | Cost-success rate frontier | Two-dimensional curve |
+  | | F-MTR-07 | Custom metric registration | Completeness gate + versioning + builtin=false marking |
   | **Security** | F-SEC-01 | Attack library | Attack strategies × injection vectors |
   | | F-SEC-02 | Automatic injection point discovery | Probes locate visible injection points |
   | | F-SEC-03 | Defense library | Pluggable defense components |
@@ -266,7 +268,7 @@ The platform delivers five end-to-end journeys — Agent Developer onboarding an
 - [ ] **AC4** (R1) A leaderboard submission is recomputed by the platform and passed through anti-cheat verification before it is published or returned.
 - [ ] **AC5** (R2) A scorer change triggers the regression set, and a scorer version that does not pass it is blocked.
 - [ ] **AC6** (R2) The benchmark regression suite runs on every platform upgrade.
-- [ ] **AC7** (R2) Every one of the 67 functional requirement identifiers is present exactly as listed in the feature module inventory, with its module grouping, feature name and description.
+- [ ] **AC7** (R2) Every one of the 69 functional requirement identifiers is present exactly as listed in the feature module inventory, with its module grouping, feature name and description.
 - [ ] **AC8** (R3) Every page in the page inventory exists and presents its stated main content to its stated primary users.
 - [ ] **AC9** (R4) The confidence section (platform failure rate, judgement failure rate, effective sample size) is always at the top of the report page and can be neither collapsed nor hidden.
 - [ ] **AC10** (R4) Every "excluded", "NA" or "no coverage" value is visually distinguished from a normal value and can be expanded to show its reason.
@@ -304,10 +306,12 @@ Not specified in the source design.
 ## References
 
 - Tech Design: Not yet created.
-- Test Report: Not yet created.
+- Test Report: [TR-003 M0 Vertical Slice][tr-003].
 
 ## Open Questions
 
 | # | Question | Owner | Blocking? |
 |---|---|---|---|
 | 1 | Not specified in the source design. | - | - |
+
+[tr-003]: <../../Test Report/TR-003-m0-vertical-slice.md>

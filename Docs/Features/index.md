@@ -34,7 +34,7 @@ document reaches its design and its verification.
 
 | ID | Feature | Summary |
 |---|---|---|
-| [FEAT-002](task-system/capability-taxonomy-and-task-system.md) | Capability Taxonomy and Task System | The capability and domain taxonomy, task metadata, task set partitioning, difficulty tiers, environment isolation, and the eight task validation gates. |
+| [FEAT-002](task-system/capability-taxonomy-and-task-system.md) | Capability Taxonomy and Task System | The capability and domain taxonomy, the two task forms with their per-form metadata contract and per-form validation gates, task set partitioning, difficulty tiers, and environment isolation. |
 
 ## Agent Integration
 
@@ -52,7 +52,7 @@ document reaches its design and its verification.
 
 | ID | Feature | Summary |
 |---|---|---|
-| [FEAT-004](scoring/scoring-and-metrics.md) | Scoring and Metrics | Six scorer categories behind one three-state verdict contract, the single authoritative metric definition set, decomposition and aggregation conventions, and the worked example that pins the semantics. |
+| [FEAT-004](scoring/scoring-and-metrics.md) | Scoring and Metrics | Six scorer categories behind one three-state verdict contract, the metric registry with its locked built-in set and its custom registrations, decomposition and aggregation conventions, and the worked example that pins the semantics. |
 
 ## Reporting
 
@@ -70,4 +70,4 @@ document reaches its design and its verification.
 
 | ID | Feature | Summary |
 |---|---|---|
-| [FEAT-007](experience/user-flows-and-feature-inventory.md) | User Flows, Feature Inventory and Permissions | The five user journeys, the 67-entry functional requirement inventory, the screen inventory, the seven interaction principles, and the permission model that separates judging rights from submission rights. |
+| [FEAT-007](experience/user-flows-and-feature-inventory.md) | User Flows, Feature Inventory and Permissions | The five user journeys, the 69-entry functional requirement inventory, the screen inventory, the seven interaction principles, and the permission model that separates judging rights from submission rights. |

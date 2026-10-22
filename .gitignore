@@ -15,3 +15,23 @@ venv/
 /runs/
 /outputs/
 *.log
+
+# Node
+node_modules/
+
+# Frontend build output and the copy the Go binary embeds. The build script
+# regenerates both; only the placeholder is tracked, because the embed
+# directive needs the directory to exist in a fresh checkout.
+/web/dist/
+/internal/web/dist/*
+!/internal/web/dist/.gitkeep
+
+# Binary output
+/dist/
+
+# Local platform data: task sets, agents and runs.
+/data/
+
+# Gate evidence. The evidence file is append-only and is meant to be
+# archived by the pipeline that produced it, not to be merged by hand.
+/.gates/

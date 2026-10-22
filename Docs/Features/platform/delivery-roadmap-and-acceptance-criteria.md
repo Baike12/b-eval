@@ -68,14 +68,17 @@ Numbered, independently testable, and each traceable to an acceptance criterion.
 
   Related chapters: [FEAT-003 Evaluation Execution and Orchestration][feat-003].
 
-  | Deliverable | Acceptance criteria |
-  |---|---|
-  | Subject-under-test registration and integration adapter | The Agent requiring the least modification completes integration in ≤ 1 day |
-  | Integration self-check | The self-check can report action format errors and contract violations; the evaluation capability is disabled when the self-check fails |
-  | Minimal task model | Supports the five elements "instruction + initial state + action space + judgement criteria + budget" |
-  | Two scorer types (state validation, rule-based criteria) | At least 10 sample tasks, with verdicts matching human judgement 100% |
-  | Single run and trajectory | The trajectory fully records action/observation/usage/termination information and can be replayed |
-  | Basic metrics | SR, pass@k, pass^k, avg@k are computed correctly (asserted against known-answer cases) |
+    | Deliverable | Acceptance criteria |
+    |---|---|
+    | Subject-under-test registration and integration adapter | The Agent requiring the least modification completes integration in ≤ 1 day |
+    | Integration self-check | The self-check can report action format errors and contract violations; the evaluation capability is disabled when the self-check fails |
+    | Minimal task model, both forms | An `environment-agentic` task supports the five elements "instruction + initial state + action space + judgement criteria + budget"; a `static-qa` task supports "prompt + termination condition + judgement criteria + budget" and is admitted without an environment |
+    | Task form enforcement | A task that declares a form and carries a field its form does not use is rejected, and the rejection names the offending field |
+    | Two scorer types (state validation, rule-based criteria) | At least 10 sample tasks, with verdicts matching human judgement 100% |
+    | Single run and trajectory | The trajectory fully records action/observation/usage/termination information and can be replayed |
+    | Metric registry | The built-in metrics are registered and locked; a registration missing a mandatory field is rejected with the missing field named; a registered custom metric appears in the report marked `builtin: false` |
+    | Basic metrics | SR, pass@k, pass^k, avg@k are computed correctly (asserted against known-answer cases) |
+    | Repository quality gates | `b-eval gate` runs the whole gate set; a failing gate blocks the pipeline and appends an evidence record; a deliberately broken fixture makes the corresponding gate fail |
 
   **Out of scope:** Task set management, report breakdown, leaderboard. (Deferred to later milestones of this same roadmap — M1, M2 and M4 — rather than excluded from the roadmap.)
 
@@ -93,7 +96,7 @@ Numbered, independently testable, and each traceable to an acceptance criterion.
   | Task set version management and freezing | Modifications after release are blocked; version diffs are inspectable |
   | All six scorer types available | At least 2 real scorer implementations per type; each type has "known-pass/known-fail" regression samples |
   | Scorer registration and composition | Supports conjunction/disjunction/weighting/partial credit; partial-credit scores map item by item to the criteria and are inspectable |
-  | Task ingestion validation gate | All eight checks are implemented; any failing check blocks ingestion and provides remediation guidance |
+    | Task ingestion validation gate | All eight checks are implemented for `environment-agentic` tasks and the six applicable checks for `static-qa` tasks; any failing check blocks ingestion and provides remediation guidance; a check that does not apply to the task's form is reported as "not applicable — no environment" rather than as a pass |
   | Environment isolation and four-phase lifecycle | Two concurrent Trials do not contaminate each other; no residual resources remain after cleanup |
   | Scoring invisibility | Judgement criteria cannot be retrieved within the Agent's accessible scope; ingestion scanning intercepts leaked tasks |
   | Introduce ≥ 2 external benchmarks | At least the SWE-bench and τ²-bench subsets are imported, the mapping is completed, and baselines are re-run |
@@ -191,7 +194,10 @@ Written as verifiable outcomes, derived only from the acceptance criteria and co
 
 - [ ] **AC1** (R1) Subject-under-test registration and integration adapter — the Agent requiring the least modification completes integration in ≤ 1 day.
 - [ ] **AC2** (R1) Integration self-check — the self-check can report action format errors and contract violations, and the evaluation capability is disabled when the self-check fails.
-- [ ] **AC3** (R1) Minimal task model — supports the five elements "instruction + initial state + action space + judgement criteria + budget".
+- [ ] **AC3** (R1) Minimal task model — an `environment-agentic` task supports the five elements "instruction + initial state + action space + judgement criteria + budget"; a `static-qa` task supports "prompt + termination condition + judgement criteria + budget" and is admitted into `dev` without an environment snapshot, initial data, initial files, initial credentials, action space or observation form.
+- [ ] **AC3a** (R1) Task form enforcement — a `static-qa` task that declares any of those six environment-only fields is rejected with the offending field named, and a task that declares no form at all is rejected.
+- [ ] **AC3b** (R1) Metric registry — the built-in metrics are registered and locked; a registration missing its unit, aggregation method, numerator, denominator or formula is rejected with the missing field named; a registration reusing a built-in ID is rejected; a registered custom metric appears in the report marked `builtin: false` and carries a confidence interval when its unit is `ratio`.
+- [ ] **AC3c** (R1) Repository quality gates — `b-eval gate` runs the whole gate set and exits non-zero when any gate fails; every gate appends an evidence record that is never rewritten; a deliberately broken fixture makes the corresponding gate fail, proving the gate can block.
 - [ ] **AC4** (R1) Two scorer types (state validation, rule-based criteria) — at least 10 sample tasks, with verdicts matching human judgement 100%.
 - [ ] **AC5** (R1) Single run and trajectory — the trajectory fully records action/observation/usage/termination information and can be replayed.
 - [ ] **AC6** (R1) Basic metrics — SR, pass@k, pass^k, avg@k are computed correctly (asserted against known-answer cases).
@@ -199,7 +205,7 @@ Written as verifiable outcomes, derived only from the acceptance criteria and co
 - [ ] **AC8** (R2) Task set version management and freezing — modifications after release are blocked, and version diffs are inspectable.
 - [ ] **AC9** (R2) All six scorer types available — at least 2 real scorer implementations per type, and each type has "known-pass/known-fail" regression samples.
 - [ ] **AC10** (R2) Scorer registration and composition — supports conjunction/disjunction/weighting/partial credit, and partial-credit scores map item by item to the criteria and are inspectable.
-- [ ] **AC11** (R2) Task ingestion validation gate — all eight checks are implemented, and any failing check blocks ingestion and provides remediation guidance.
+- [ ] **AC11** (R2) Task ingestion validation gate — all eight checks are implemented for `environment-agentic` tasks and the six applicable checks for `static-qa` tasks, any failing check blocks ingestion and provides remediation guidance, and a check that does not apply to the task's form is reported as "not applicable — no environment" rather than as a pass.
 - [ ] **AC12** (R2) Environment isolation and four-phase lifecycle — two concurrent Trials do not contaminate each other, and no residual resources remain after cleanup.
 - [ ] **AC13** (R2) Scoring invisibility — judgement criteria cannot be retrieved within the Agent's accessible scope, and ingestion scanning intercepts leaked tasks.
 - [ ] **AC14** (R2) Introduce ≥ 2 external benchmarks — at least the SWE-bench and τ²-bench subsets are imported, the mapping is completed, and baselines are re-run.
@@ -271,8 +277,8 @@ The roadmap advances with **"first make it run, then make it trustworthy, finall
 
 ## References
 
-- Tech Design: Not yet created.
-- Test Report: Not yet created.
+- Tech Design: [TD-004 M0 Runtime and Quality Gate System][td-004]
+- Test Report: [TR-003 M0 Vertical Slice][tr-003]
 - Platform scope and positioning: [FEAT-001 Platform Scope and Positioning][feat-001]
 - Capability taxonomy and task system: [FEAT-002 Capability Taxonomy and Task System][feat-002]
 - Evaluation execution and orchestration: [FEAT-003 Evaluation Execution and Orchestration][feat-003]
@@ -298,3 +304,5 @@ Not specified in the source design.
 [feat-006]: <../security/security-robustness-and-quality-assurance.md>
 [feat-007]: <../experience/user-flows-and-feature-inventory.md>
 [feat-008]: <./delivery-roadmap-and-acceptance-criteria.md>
+[td-004]: <../../Tech Design/TD-004-m0-runtime-and-quality-gate-system.md>
+[tr-003]: <../../Test Report/TR-003-m0-vertical-slice.md>

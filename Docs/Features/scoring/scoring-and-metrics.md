@@ -6,14 +6,14 @@
 | **Status** | Draft |
 | **Owner** | Platform team |
 | **Priority** | P0 |
-| **Implements** | `F-JDG-01`, `F-JDG-02`, `F-JDG-03`, `F-JDG-04`, `F-JDG-05`, `F-JDG-06`, `F-JDG-07`, `F-MTR-01`, `F-MTR-02`, `F-MTR-03`, `F-MTR-04`, `F-MTR-05`, `F-MTR-06` |
+| **Implements** | `F-JDG-01`, `F-JDG-02`, `F-JDG-03`, `F-JDG-04`, `F-JDG-05`, `F-JDG-06`, `F-JDG-07`, `F-MTR-01`, `F-MTR-02`, `F-MTR-03`, `F-MTR-04`, `F-MTR-05`, `F-MTR-06`, `F-MTR-07` |
 | **Created** | 2026-10-22 |
 | **Last Updated** | 2026-10-22 |
 | **Source** | Functional design chapter 04 — Scoring and Metrics |
 
 ## Summary
 
-FEAT-004 defines the platform's scoring and metrics layer: six scorer categories (J1–J6) behind one unified three-state result contract, one unique set of metric definitions (SR, pass@k, pass^k, avg@k, progress score, efficiency, cost, failure attribution, reliability), and the decomposition and aggregation conventions that every report, leaderboard, and export format must reference. It also fixes the usage rules for model judging, the human review workbench, and a worked computation example that pins down the macro/micro and platform-failure semantics. The single most important outcome is that every task, trial, and report gets exactly one unambiguous, reproducible verdict and one canonical number.
+FEAT-004 defines the platform's scoring and metrics layer: six scorer categories (J1–J6) behind one unified three-state result contract, one **metric registry** holding a locked set of built-in metrics (SR, pass@k, pass^k, avg@k, progress score, efficiency, cost, failure attribution, reliability) and an open set of registered custom metrics, and the decomposition and aggregation conventions that every report, leaderboard, and export format must reference. It also fixes the usage rules for model judging, the human review workbench, and a worked computation example that pins down the macro/micro and platform-failure semantics. The single most important outcome is that every task, trial, and report gets exactly one unambiguous, reproducible verdict and one canonical number — and that the canonical numbers are looked up in one place rather than recomputed at each call site.
 
 ## Problem
 
@@ -39,6 +39,7 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
 - Rubric-item-based scoring for open-ended tasks: itemization, independent judging, state flips, sliding-window evaluation with overlap, UNSCORED on judge unavailability, and the rubric anti-cheating criteria.
 - Scorer composition by conjunction / disjunction, partial credit, declared scorer weights, and a mandatory primary criterion per task.
 - The metric definition set: notation, success metrics (`SR`, `pass@k`, `pass^k`, `avg@k`, task pass rate), progress score forms, efficiency and cost metrics, failure attribution metrics, and reliability / confidence intervals.
+- The **metric registry**: the single resolution point for every metric, its mandatory entry fields, the locked built-in set, and the rules for registering a custom metric.
 - Decomposition dimensions, micro and macro aggregation conventions with the macro default, group equal-weighting, and missing coverage handling.
 - Usage rules for judge (model scoring) and the human review workbench, revision trail, sampling rules, and judge-calibration feedback loop.
 - The metric computation example that serves as a convention consistency check, including the 5% platform-failure threshold and the "insufficient confidence" flag.
@@ -46,6 +47,9 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
 ### Out of Scope
 
 - Not specified in the source design.
+- **Redefining a built-in metric.** The built-in set is locked (4.2.0.2). A team that needs a different formula registers a new metric; it does not overload a built-in ID.
+- **An expression language for arbitrary metrics.** A custom metric is code or a declared computation registered through the platform, not a user-supplied formula string evaluated at report time. An expression language adds an injection surface and a second, unreviewed definition path.
+- **Cross-platform metric identity.** A registered metric is comparable within one platform and one registry version. Comparing a custom metric across platforms requires the same registry entry on both sides.
 
 ## Requirements
 
@@ -153,11 +157,31 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
     | Required action (called the order-modification tool) | J3 | Auxiliary: correct path |
     | No overreach (did not modify other orders) | J1 | Auxiliary: scope constraint |
 
-- **R8** All metric computation conventions shall be defined uniquely in one place, which reports, leaderboards, and export formats all reference, and the platform notation shall be fixed as specified.
+- **R8** All metric computation conventions shall be resolved through one **metric registry**, which shall hold a locked set of built-in metrics and a set of registered custom metrics, and which reports, leaderboards and export formats shall all read from.
 
     #### 4.2 Core Metric Definitions
 
-    The computation conventions of all metrics are defined uniquely in this section; reports, leaderboards, and export formats all reference this section.
+    The computation conventions of all metrics are defined uniquely in this section and registered in the metric registry (4.2.0); reports, leaderboards and export formats all resolve their entries from the registry, never by recomputing a formula at the call site.
+
+    #### 4.2.0 The Metric Registry
+
+    A metric is a registry entry, never an ad-hoc computation at a call site. Every entry carries the following fields:
+
+    | Field | Meaning |
+    |---|---|
+    | **ID** | Stable identifier, unique within the registry. |
+    | **Name** | Human-readable label shown in reports. |
+    | **Description** | One sentence stating what the number means. |
+    | **Builtin** | `true` for the platform's own metrics, `false` for registered ones. |
+    | **Unit** | `ratio` · `count` · `score`. A `ratio` metric always carries a confidence interval. |
+    | **Aggregation** | `macro` (task-equal-weighted) · `micro` (trial-weighted) · `none` (not aggregated over tasks). |
+    | **Numerator** | What is counted in the numerator, stated in words. |
+    | **Denominator** | What is counted in the denominator, stated in words. |
+    | **Formula** | The computation, stated so that a third party can recompute it. |
+    | **CI method** | `wilson` · `normal` · `bootstrap`, applied when the unit is `ratio`. |
+    | **Version** | The version of the entry. A change to the formula or the denominator creates a new version; results computed under an earlier version stay valid and are annotated with the version they were computed under. |
+
+    The registry is the only place a metric is defined. A report, a leaderboard row, an export bundle and the audit package all resolve the same entry by ID, so the same run always yields the same number for the same metric ID.
 
     #### 4.2.1 Notation
 
@@ -276,6 +300,8 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
 
     **macro (task-equal-weighted) is used by default.** Rationale: the number of trials is determined by the evaluator's configuration and must not be allowed to determine task weights. The report must also give the micro figures for comparison.
 
+    **The selected aggregation method is recorded on every registered metric entry (4.2.0) and is the method the report labels.** The same method is applied to a built-in metric and to a registered custom metric, so a custom metric is comparable with a built-in one in the same table.
+
     **Group equal-weighting principle:** when performing a Cartesian decomposition across multiple dimensions, every cell has equal weight, avoiding cells with many tasks from dominating the total score (see τ²-bench's cell equal-weight aggregation and AgentCompass's `category_mean`).
 
 - **R16** The platform shall handle missing coverage explicitly, so that uncovered cells, excluded trials, and NA pass@k items are never silently filled or silently dropped.
@@ -337,6 +363,54 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
 
     This example shows that **macro and micro yield different conclusions, and the platform failure rate directly invalidates the credibility of the report**. Both points must be presented in the report simultaneously.
 
+- **R20** The platform shall expose the metric registry as the single resolution point for every metric, and every registry entry shall declare its unit, its aggregation method, its numerator, its denominator and its formula.
+
+    #### 4.2.0.1 Registry Entry Completeness
+
+    A registration is accepted only when all five mandatory fields of 4.2.0 are present and non-empty. A registration missing any of them is rejected, and the rejection names the missing field. The platform applies the same rule to the built-in entries, so the built-in set is validated by the same code path as a custom registration — there is no privileged path that skips the check.
+
+    A registry entry that declares unit `ratio` and no CI method is rejected: a ratio without an interval is a number that cannot be compared against another number.
+
+- **R21** The built-in metrics shall be locked, and a run, a task or a task set shall not redefine or override a built-in metric's formula, denominator, aggregation method or CI method.
+
+    #### 4.2.0.2 Locked Built-in Metrics
+
+    The built-in set is:
+
+    `success_rate` · `pass_at_k` · `pass_power_k` · `avg_at_k` · `task_pass_rate` · `progress_score` · `platform_failure_rate` · `judgement_failure_rate` · `avg_steps_per_success` · `avg_tokens_per_success` · `avg_cost_per_success` · `invalid_action_rate` · `repeated_action_rate` · `grounding_accuracy`
+
+    Locking them is what makes a score comparable across platforms: if two platforms can redefine `pass_at_k`, the two numbers carry no shared meaning. A run may change *how* a built-in metric is computed where the specification allows it — the CI method, the aggregation method, the repetition count `k` — and every such choice is recorded in the run record.
+
+    A registration attempt that reuses a built-in ID is rejected with the reason "built-in metric ID is reserved".
+
+- **R22** The platform shall accept a custom metric registration and shall reject any registration that does not declare its unit, aggregation method, numerator, denominator and formula, and shall mark every registered custom metric as custom everywhere it appears.
+
+    #### 4.2.0.3 Custom Metric Registration
+
+    A task set, a project or an operator may register a metric that is not built in — for example "share of trials whose answer contains every required keyword", or "share of tasks whose answer length falls in the expected band". A registration is accepted only under the rules of 4.2.0.1.
+
+    A registered custom metric carries these additional constraints:
+
+    | Constraint | Rule |
+    |---|---|
+    | **Identity** | The ID must not collide with a built-in ID; an attempt to redefine a built-in metric is rejected. |
+    | **Visibility** | A custom metric is marked `builtin: false` everywhere it appears — report, export, audit package, leaderboard — and is never presented as a platform metric. |
+    | **Denominator** | The denominator is stated explicitly; a cell with no coverage is reported as "no coverage" and is never silently filled with 0. |
+    | **Confidence** | A custom metric with unit `ratio` carries a confidence interval computed with its declared CI method. |
+    | **Composition** | A custom metric may be used in a weighted view, and its weight is persisted alongside the results like any built-in metric's. |
+    | **Stability** | A registered metric is versioned. A change to its formula or denominator creates a new version; results computed under the previous version stay valid and are annotated with the version they were computed under. |
+
+- **R23** The platform shall not present a single unlabelled number as "the Agent's capability", and a weighted total may be presented only when the aggregation method, the weights and the coverage are displayed together with it.
+
+    #### 4.2.0.4 Totals and Weighted Views
+
+    This rule reconciles the report's "total score" with the platform's refusal of a single capability number:
+
+    - A **total score** in a report is the weighted view of 2.1.4 over the chosen decomposition dimensions, computed under one explicitly labelled aggregation method.
+    - The total is displayed together with its aggregation method, its weights, its effective coverage and its confidence interval. A total without those four is not presented.
+    - A report shows the macro total and the micro total side by side, each labelled with its method.
+    - No number is ever described as "the Agent's overall capability".
+
 ## Acceptance Criteria
 
 - [ ] **AC1** The platform exposes exactly the six scorer categories `J1`, `J2`, `J3`, `J4`, `J5`, and `J6`, each with the judgement basis, typical implementation, and reference source given in 4.1. (R1)
@@ -353,7 +427,7 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
 - [ ] **AC12** The judging prompt template treats only the Agent's replies and tool calls as evidence, refuses query-type tool return values as completion evidence, requires rubric items involving state changes to confirm the change actually happened, and requires rationales to cite specific turns. (R6)
 - [ ] **AC13** Every task designates at least one primary criterion used for the binary success rate; auxiliary criteria contribute only to the continuous score. (R7)
 - [ ] **AC14** For a conjunction task the total score equals the number of satisfied scorers divided by the total number of scorers, and declared scorer weights are stored with the task and displayed. (R7)
-- [ ] **AC15** Metric computation conventions exist in exactly one definition set, and every report, leaderboard, and export format takes its formulas and denominators from that set; no second definition of the same metric is in use. (R8)
+- [ ] **AC15** Metric computation conventions are resolved through exactly one metric registry, and every report, leaderboard, and export format takes its formulas and denominators from registry entries; no second definition of the same metric is in use at any call site. (R8)
 - [ ] **AC16** `SR`, `pass@k`, `pass^k`, `avg@k`, and the task pass rate are computed with the formulas and denominators of 4.2.2; `pass@k` and `pass^k` are always reported together; when `n_t < k` the item is recorded as NA and the valid task coverage is reported. (R9)
 - [ ] **AC17** The progress score never regresses within the same trial; for a task whose primary criterion does not pass, the final score is still capped by the primary criterion; every report presents both a binary success rate and a continuous average score curve. (R10)
 - [ ] **AC18** Recorded cost equals "model input tokens + output tokens + judging model consumption + user simulator consumption" plus the scoring overhead, and the price table is persisted alongside the results. (R11)
@@ -368,14 +442,19 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
 - [ ] **AC27** The review workbench displays the trajectory, scoring evidence, rubric items, and the current verdict and supports "uphold / revise / flag as disputed"; each revision records the reviser, the time, the reason, the original verdict, and the new verdict; verdict history can be appended but never deleted. (R18)
 - [ ] **AC28** All UNSCORED trials, all boundary samples, and the first run of every high-value task are reviewed; random review runs at the configurable ratio; the "automatic scoring deviation rate" metric is produced; reviewed samples enter the human-annotated set used for the judge calibration in 4.4. (R18)
 - [ ] **AC29** The worked example of 4.6 reproduces exactly: `SR` = 0.500, `pass@3` = 1.000, `pass^3` = 0.500, `avg@3` = 0.606, macro success rate = 0.444, platform failure rate = 11.1%; and a report whose platform failure rate exceeds the 5% threshold is flagged "insufficient confidence". (R19)
+- [ ] **AC30** A metric registration missing its unit, aggregation method, numerator, denominator or formula is rejected, and the rejection message names the missing field; a registration declaring unit `ratio` and no CI method is rejected as well; the built-in entries pass the same validation path. (R20)
+- [ ] **AC31** A registration attempt that reuses a built-in metric ID is rejected with the reason "built-in metric ID is reserved", and no run, task or task set can change a built-in metric's formula, denominator, aggregation method or CI method — while the CI method, the aggregation method and `k` remain settable per run and are recorded in the run record. (R21)
+- [ ] **AC32** A custom metric registered through the platform appears in the report, in the export bundle and in the audit package marked `builtin: false`, carries a confidence interval when its unit is `ratio`, reports a cell with no coverage as "no coverage" rather than 0, and can be used in a weighted view whose weight is persisted alongside the results. (R22)
+- [ ] **AC33** A change to a registered custom metric's formula or denominator creates a new version; results computed under the previous version remain readable and are annotated with the version they were computed under. (R22)
+- [ ] **AC34** A report's total score is displayed together with its aggregation method, its weights, its effective coverage and its confidence interval, and the macro and micro totals appear side by side, each labelled with its method; no number anywhere in the report is described as the Agent's overall capability. (R23)
 
 ## Impact
 
 | Area | Effect |
 |---|---|
-| Users | Task authors declare a reference plus combination rules instead of a scoring script, so scorers are reusable across tasks and across benchmarks. Agents are judged on the outcome by default, so equivalent correct solutions are no longer penalised, and platform-side failures are no longer deducted as capability failures. Report readers receive one canonical, reproducible set of numbers, with `pass@k` and `pass^k` always shown together and one aggregation method explicitly labelled. |
-| Existing behaviour | Metric computation conventions move to a single definition set that reports, leaderboards, and export formats all reference. Aggregation becomes macro (task-equal-weighted) by default with the micro figures also given; cells with no coverage are shown as "no coverage" instead of being silently filled with 0; platform failures stay excluded from the denominators but their number and reasons are now displayed; the automatic scoring deviation rate metric is added. |
-| Operational cost | Cost is measured in full as "model input tokens + output tokens + judging model consumption + user simulator consumption" and the scoring overhead must also be counted, so the price table is persisted alongside the results. Every judging model is calibrated on a human-annotated set before deployment, and human review load is mandatory for all UNSCORED trials, all boundary samples, and the first run of every high-value task, plus random review at a configurable ratio. |
+| Users | Task authors declare a reference plus combination rules instead of a scoring script, so scorers are reusable across tasks and across benchmarks. Report readers receive one canonical, reproducible set of numbers resolved from the metric registry, with `pass@k` and `pass^k` always shown together and one aggregation method explicitly labelled. Teams that need a metric the platform does not ship register it themselves, under the same completeness rules the built-in entries obey. |
+| Existing behaviour | Metric computation conventions move from a fixed definition set to a registry with a locked built-in subset and an open registration path. Aggregation becomes macro (task-equal-weighted) by default with the micro figures also given; cells with no coverage are shown as "no coverage" instead of being silently filled with 0; platform failures stay excluded from the denominators but their number and reasons are now displayed; the automatic scoring deviation rate metric is added. |
+| Operational cost | Cost is measured in full as "model input tokens + output tokens + judging model consumption + user simulator consumption" and the scoring overhead must also be counted, so the price table is persisted alongside the results. Every judging model is calibrated on a human-annotated set before deployment, and human review load is mandatory for all UNSCORED trials, all boundary samples, and the first run of every high-value task, plus random review at a configurable ratio. Registering a custom metric adds one registry entry and its version history; it adds no per-trial cost. |
 
 ## Risks and Mitigations
 
@@ -391,15 +470,17 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
 | Trial count, set by the evaluator's configuration, distorts the published score; cells with many tasks dominate a multi-dimensional decomposition. | Med | macro (task-equal-weighted) is used by default with the micro figures given for comparison, and every cell in a Cartesian decomposition has equal weight (τ²-bench's cell equal-weight aggregation, AgentCompass's `category_mean`). |
 | Platform failures silently inflate the denominator or silently drop tasks, and a platform failure rate above 5% invalidates the report's credibility. | High | Platform failures are excluded from the denominator but their number and reasons are displayed, the platform failure rate is reported, uncovered cells are shown as "no coverage", NA `pass@k` items are reported with their valid task coverage, and a report whose platform failure rate exceeds the 5% threshold is flagged "insufficient confidence" (the 4.6 example yields 11.1%). |
 | Human review is skipped or its history is altered, and the automatic scoring deviation stays unknown. | Med | Mandatory review of all UNSCORED trials, all boundary samples, and the first run of every high-value task; random review at a configurable ratio producing the "automatic scoring deviation rate"; verdict history can only be appended, never deleted; reviews feed the judge calibration in 4.4. |
+| A registered custom metric is redefined in place, so two runs of the same task set report the same metric ID with different meanings. | Med | The built-in set is locked; a custom metric is versioned, and a formula or denominator change creates a new version while older results stay valid and carry the version they were computed under (4.2.0.3). |
+| A custom metric with a loose denominator produces a number that looks comparable with a built-in metric but is not. | Med | A registration without an explicit unit, aggregation method, numerator, denominator and formula is rejected; a `ratio` metric without a CI method is rejected; custom metrics are marked `builtin: false` everywhere they appear. |
 
 ## Rollout
 
-Not specified in the source design.
+The metric registry ships with the M0 runtime. The built-in set is registered at startup and is locked from the first release; the registration path for custom metrics is open from the first release as well, because the completeness rules make an ill-formed registration impossible to accept. The rollout is reverted by removing the registry and restoring the fixed definition set, which is safe because the built-in entries carry the same formulas the fixed set carried.
 
 ## References
 
-- Tech Design: Not yet created.
-- Test Report: Not yet created.
+- Tech Design: [TD-003 Metric Registry and Scoring Contract][td-003]
+- Test Report: [TR-003 M0 Vertical Slice][tr-003]
 - Source: Functional design chapter 04 — Scoring and Metrics.
 - Sibling design chapter cited by this document: [FEAT-002 Capability Taxonomy and Task System][feat-002] (cited as 2.1.1, 2.1.2, 2.1.3, and 2.5 for the decomposition dimensions).
 
@@ -414,3 +495,5 @@ Not specified in the source design.
      with the template. -->
 
 [feat-002]: <../task-system/capability-taxonomy-and-task-system.md>
+[td-003]: <../../Tech Design/TD-003-metric-registry-and-scoring-contract.md>
+[tr-003]: <../../Test Report/TR-003-m0-vertical-slice.md>

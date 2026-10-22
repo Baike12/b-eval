@@ -81,18 +81,19 @@ Not specified in the source design.
   | **Scorer agreement** | Vote agreement rate when there are multiple judges; marked "not evaluated" for a single judge |
   | **Estimate vs. actual comparison** | Estimated cost/duration vs. actual |
 
-- **R3** The main score section of the single-run report shows the total score under the selected aggregation method, pass@k and pass^k side by side, the continuous average score, a 95% confidence interval next to every ratio, the effective coverage rate and the primary criterion description.
+- **R3** The main score section of the single-run report shows the total score under the selected aggregation method, pass@k and pass^k side by side, the continuous average score, a 95% confidence interval next to every ratio, the effective coverage rate and the primary criterion description; every number in that section is resolved from the metric registry.
 
   ##### 5.2.2 Main Score Section
 
   | Display item | Content |
   |---|---|
-  | Total score | Given according to the selected aggregation method (default macro), with micro also given |
+  | Total score | The weighted view of 2.1.4 under the selected aggregation method (default macro), with micro also given; displayed together with its weights and its effective coverage, per [FEAT-004 R23][feat-004] |
   | pass@k, pass^k | Displayed side by side, default k = number of repetitions |
   | Continuous average score | Score including the progress score of tasks |
   | Confidence interval | 95%, shown next to every ratio |
   | Effective coverage rate | Effective task coverage rate for pass@k-type metrics |
   | Primary criterion description | One sentence stating the definition of "success" |
+  | Metric provenance | Each metric is shown with its registry ID and its version; a registered custom metric is shown marked `builtin: false` |
 
 - **R4** The disaggregation section produces one table/chart for each dimension of 4.3.1 with sample size, success rate, continuous average score and confidence interval in every cell, together with the five chart panels, and leaves dimensions with no coverage explicitly blank and annotated instead of filled with 0.
 
@@ -265,7 +266,7 @@ Written as verifiable outcomes.
 - [ ] **AC2** (R2) The report header shows the task set and version, the Agent under test and version, the plan fingerprint, run time and elapsed time, the platform failure rate, the verdict failure rate, the valid sample size, the scorer agreement and the estimate vs. actual comparison, and it is rendered above the score section.
 - [ ] **AC3** (R2) When the platform failure rate exceeds the threshold, the report as a whole is marked "insufficient confidence".
 - [ ] **AC4** (R2) Scorer agreement is marked "not evaluated" for a single judge and shows the vote agreement rate when there are multiple judges.
-- [ ] **AC5** (R3) The main score section gives the total score according to the selected aggregation method (default macro) with micro also given, shows pass@k and pass^k side by side with default k = number of repetitions, shows the continuous average score including the progress score of tasks, and states the primary criterion description in one sentence.
+- [ ] **AC5** (R3) The main score section gives the total score according to the selected aggregation method (default macro) with micro also given, shows the total together with its weights and its effective coverage, shows pass@k and pass^k side by side with default k = number of repetitions, shows the continuous average score including the progress score of tasks, and states the primary criterion description in one sentence.
 - [ ] **AC6** (R3) Every ratio in the main score section is shown next to a 95% confidence interval, and the effective coverage rate for pass@k-type metrics is displayed.
 - [ ] **AC7** (R4) One table/chart is produced for each dimension in 4.3.1 and every cell contains sample size, success rate, continuous average score and confidence interval.
 - [ ] **AC8** (R4) The disaggregation view contains the success rate bar chart by domain, the capability dimension radar chart, the difficulty-stratified bar chart, the per-step score curve and the cost-vs-success-rate scatter plot.

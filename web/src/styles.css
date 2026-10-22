@@ -1,0 +1,391 @@
+/* The platform's visual language.
+ *
+ * Two rules drive the styling. A number that carries no coverage is never
+ * rendered like a number: it gets its own label and its own colour. And the
+ * confidence block is the most prominent element on a report page, because
+ * the number without it is not a measurement.
+ */
+
+:root {
+  --bg: #ffffff;
+  --fg: #18181b;
+  --muted: #71717a;
+  --line: #e4e4e7;
+  --panel: #fafafa;
+  --accent: #2563eb;
+  --ok: #15803d;
+  --danger: #b91c1c;
+  --custom: #7c3aed;
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.layout__header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.layout__brand {
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.layout__tagline {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.layout__nav {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.layout__nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.layout__nav a.active {
+  color: var(--accent);
+}
+
+.layout__main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.75rem;
+}
+
+h3 {
+  font-size: 0.95rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
+h4 {
+  font-size: 0.85rem;
+  margin: 0.75rem 0 0.35rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.empty {
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.error {
+  color: var(--danger);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+}
+
+.notice {
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.9rem;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin: 1.25rem 0;
+  background: var(--bg);
+}
+
+.confidence {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--ok);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin: 1.25rem 0;
+  background: #f0fdf4;
+}
+
+.confidence--insufficient {
+  border-left-color: var(--danger);
+  background: #fef2f2;
+}
+
+.confidence__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.confidence__header h2 {
+  margin: 0;
+}
+
+.confidence__reason {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.confidence__grid,
+.main-score {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 10rem;
+}
+
+.stat__label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stat__value {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.stat--large .stat__value {
+  font-size: 2.1rem;
+}
+
+.stat__note {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table--pairs th {
+  width: 12rem;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.metric__name {
+  display: block;
+  font-weight: 600;
+}
+
+.metric__id,
+.metric__description,
+.metric__definition,
+.metric__aggregation {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.metric__formula {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge--ok,
+.badge--builtin {
+  color: var(--ok);
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.badge--danger {
+  color: var(--danger);
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.badge--custom {
+  color: var(--custom);
+  border-color: #ddd6fe;
+  background: #f5f3ff;
+}
+
+.badge--form {
+  color: var(--fg);
+  background: var(--panel);
+}
+
+.coverage--none {
+  color: var(--danger);
+  font-style: italic;
+  font-weight: 600;
+}
+
+.coverage--ok {
+  color: var(--muted);
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.interval {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.interval__method {
+  font-size: 0.75rem;
+}
+
+.form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.form input,
+.form select {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font: inherit;
+  color: var(--fg);
+  min-width: 12rem;
+}
+
+button {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--fg);
+  color: var(--bg);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: var(--muted);
+  cursor: not-allowed;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.list li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.dist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dist li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.2rem 0;
+  font-size: 0.85rem;
+}
+
+.dist__count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.failures__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.instruction {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.breakdown {
+  margin-bottom: 1.5rem;
+}

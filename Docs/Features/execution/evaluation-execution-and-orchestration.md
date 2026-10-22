@@ -341,8 +341,8 @@ Not specified in the source design.
 
 ## References
 
-- Tech Design: Not yet created.
-- Test Report: Not yet created.
+- Tech Design: [TD-004 M0 Runtime and Quality Gate System][td-004]
+- Test Report: [TR-003 M0 Vertical Slice][tr-003]
 - Functional design chapter 02 — Capability Taxonomy and Task System: [FEAT-002][feat-002]
 - Source of this document: Functional design chapter 03 — Evaluation Execution and Orchestration (this document).
 
@@ -356,3 +356,5 @@ Not specified in the source design.
      because the referenced paths may contain spaces. -->
 
 [feat-002]: <../task-system/capability-taxonomy-and-task-system.md>
+[td-004]: <../../Tech Design/TD-004-m0-runtime-and-quality-gate-system.md>
+[tr-003]: <../../Test Report/TR-003-m0-vertical-slice.md>

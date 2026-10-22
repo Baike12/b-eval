@@ -48,7 +48,22 @@ document is the single entry point for its whole delivery chain.
 | [`Tech Design/`](<./Tech Design/>) | Technical design documents | `TD-<nnn>-<slug>.md` |
 | [`Test Report/`](<./Test Report/>) | Verification / test reports | `TR-<nnn>-<slug>.md` |
 
-### 1.3 Conventions
+The delivery chain in full:
+
+| Feature | Tech Design | Test Report |
+|---|---|---|
+| [FEAT-009 Unified Agent Adapter Protocol](./Features/agent-integration/unified-agent-adapter-protocol.md) | [TD-001 Unified Agent Adapter Protocol](<./Tech Design/TD-001-unified-agent-adapter-protocol.md>) | [TR-001 Unified Agent Adapter Protocol](<./Test Report/TR-001-unified-agent-adapter-protocol.md>) |
+| [FEAT-002 Capability Taxonomy and Task System](./Features/task-system/capability-taxonomy-and-task-system.md) | [TD-002 Task Forms and the Task Metadata Contract](<./Tech Design/TD-002-task-forms-and-metadata-contract.md>) | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
+| [FEAT-003 Evaluation Execution and Orchestration](./Features/execution/evaluation-execution-and-orchestration.md) | [TD-004 M0 Runtime and Quality Gate System](<./Tech Design/TD-004-m0-runtime-and-quality-gate-system.md>) | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
+| [FEAT-004 Scoring and Metrics](./Features/scoring/scoring-and-metrics.md) | [TD-003 Metric Registry and Scoring Contract](<./Tech Design/TD-003-metric-registry-and-scoring-contract.md>) | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
+| [FEAT-007 User Flows and Feature Inventory](./Features/experience/user-flows-and-feature-inventory.md) | — | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
+| [FEAT-008 Delivery Roadmap and Acceptance Criteria](./Features/platform/delivery-roadmap-and-acceptance-criteria.md) | [TD-004 M0 Runtime and Quality Gate System](<./Tech Design/TD-004-m0-runtime-and-quality-gate-system.md>) | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
+
+| Fix | Test Report |
+|---|---|
+| [FIX-002 Black-box CLI Empty Action Sequence Not Flagged](./Fix/agent-integration/blackbox-cli-empty-action-sequence-not-flagged.md) | [TR-002 Black-box CLI Empty Action Sequence Fix](<./Test Report/TR-002-blackbox-cli-empty-action-sequence-fix.md>) |
+
+### 1.4 Conventions
 
 - Feature documents **must** reference their Tech Design document and their Test Report document, using Markdown reference-style links with the definitions at the bottom of the file.
 - Fix documents **must** reference their Test Report document.
