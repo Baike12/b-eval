@@ -261,10 +261,10 @@ Not specified in the source design.
 
 <!-- Link definitions stay at the bottom of the file. -->
 
-[feat-002]: <./FEAT-002-capability-taxonomy-and-task-system.md>
-[feat-003]: <./FEAT-003-evaluation-execution-and-orchestration.md>
-[feat-004]: <./FEAT-004-scoring-and-metrics.md>
-[feat-005]: <./FEAT-005-reporting-analysis-and-comparison.md>
-[feat-006]: <./FEAT-006-security-robustness-and-quality-assurance.md>
-[feat-007]: <./FEAT-007-user-flows-and-feature-inventory.md>
-[feat-008]: <./FEAT-008-delivery-roadmap-and-acceptance-criteria.md>
+[feat-002]: <../task-system/capability-taxonomy-and-task-system.md>
+[feat-003]: <../execution/evaluation-execution-and-orchestration.md>
+[feat-004]: <../scoring/scoring-and-metrics.md>
+[feat-005]: <../reporting/reporting-analysis-and-comparison.md>
+[feat-006]: <../security/security-robustness-and-quality-assurance.md>
+[feat-007]: <../experience/user-flows-and-feature-inventory.md>
+[feat-008]: <./delivery-roadmap-and-acceptance-criteria.md>

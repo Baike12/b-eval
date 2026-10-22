@@ -99,5 +99,5 @@ The protocol ships behind the M0 milestone. Adapters are registered one at a tim
 | 1 | Does the termination reason vocabulary need a "cancelled by operator" value, or is operator cancellation handled entirely outside the protocol? | Platform team | No |
 | 2 | Should cost reporting be mandatory, given some model providers do not expose a price table? | Platform team | No |
 
-[td-001]: <../Tech Design/TD-001-unified-agent-adapter-protocol.md>
-[tr-001]: <../Test Report/TR-001-unified-agent-adapter-protocol.md>
+[td-001]: <../../Tech Design/TD-001-unified-agent-adapter-protocol.md>
+[tr-001]: <../../Test Report/TR-001-unified-agent-adapter-protocol.md>

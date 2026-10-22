@@ -17,16 +17,31 @@ Project-level working rules for this repository.
 
 | You are writing | Put it in | Template |
 |---|---|---|
-| A new capability / requirement | `Docs/Features/FEAT-<nnn>-<slug>.md` | `Docs/Feature-Template.md` |
-| A change to the functional design | The matching `Docs/Features/FEAT-*.md` document | `Docs/Feature-Template.md` |
-| A defect and its fix | `Docs/Fix/FIX-<nnn>-<slug>.md` | `Docs/Fix-Template.md` |
+| A new capability / requirement | `Docs/Features/<category>/<feature-name>.md` | `Docs/Feature-Template.md` |
+| A change to the functional design | The matching `Docs/Features/<category>/<feature-name>.md` document | `Docs/Feature-Template.md` |
+| A defect and its fix | `Docs/Fix/<category>/<fix-name>.md` | `Docs/Fix-Template.md` |
 | How something is built | `Docs/Tech Design/TD-<nnn>-<slug>.md` | — |
 | Proof that something works | `Docs/Test Report/TR-<nnn>-<slug>.md` | — |
 
 **The functional design is the body of `Docs/Features/`.** There is no separate chapter
-series — each capability area of the platform is one Feature document. `FEAT-007` holds the
-functional requirement inventory (`F-XXX-NN`) that the other features declare in their
-`Implements` field.
+series — each capability area of the platform is one Feature document, filed in one folder
+per category. `FEAT-007` holds the functional requirement inventory (`F-XXX-NN`) that the
+other features declare in their `Implements` field.
+
+**File names carry the requirement name, not the ID** — `scoring/scoring-and-metrics.md`,
+not `FEAT-004-scoring-and-metrics.md`. The ID lives in the document's metadata table.
+
+## Indexes
+
+`Docs/Features/index.md` and `Docs/Fix/index.md` are the entry points for their folders.
+
+- **Every document in a folder must appear in that folder's `index.md`.** A document missing
+  from the index is a defect.
+- The index lists the document ID, its file name, and a one-line summary.
+- **Only the documents in the folder are indexed.** Tech Design and Test Report documents are
+  not indexed separately — each is reachable from the `References` section of the feature or
+  fix it belongs to, so indexing them again would create a second place to keep in sync.
+- Update the index in the same change that adds, removes or renames a document.
 
 ## Mandatory Cross-References
 

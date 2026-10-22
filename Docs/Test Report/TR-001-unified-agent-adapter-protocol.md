@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **ID** | TR-001 |
-| **Verifies** | [FEAT-009 Unified Agent Adapter Protocol](../Features/FEAT-009-unified-agent-adapter-protocol.md) |
+| **Verifies** | [FEAT-009 Unified Agent Adapter Protocol](../Features/agent-integration/unified-agent-adapter-protocol.md) |
 | **Technical Design** | [TD-001 Unified Agent Adapter Protocol](<../Tech Design/TD-001-unified-agent-adapter-protocol.md>) |
 | **Environment** | Smoke task set: 10 tasks across 6 domains (web, desktop, code, tool, service, multi-agent) |
 | **Executed** | 2026-10-22 |
@@ -97,6 +97,6 @@ All seven acceptance criteria pass, with 150/150 trials valid and zero accountin
 - Feature: [FEAT-009 Unified Agent Adapter Protocol][feat-009]
 - Technical Design: [TD-001 Unified Agent Adapter Protocol][td-001]
 
-[feat-009]: <../Features/FEAT-009-unified-agent-adapter-protocol.md>
+[feat-009]: <../Features/agent-integration/unified-agent-adapter-protocol.md>
 [td-001]: <../Tech Design/TD-001-unified-agent-adapter-protocol.md>
-[fix-002]: <../Fix/FIX-002-blackbox-cli-empty-action-sequence-not-flagged.md>
+[fix-002]: <../Fix/agent-integration/blackbox-cli-empty-action-sequence-not-flagged.md>

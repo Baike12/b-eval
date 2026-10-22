@@ -330,4 +330,4 @@ Not specified in the source design.
 
 <!-- Link definitions stay at the bottom of the file. -->
 
-[feat-004]: <./FEAT-004-scoring-and-metrics.md>
+[feat-004]: <../scoring/scoring-and-metrics.md>

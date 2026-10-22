@@ -298,5 +298,5 @@ Not specified in the source design.
 <!-- Link definitions stay at the bottom of the file. Angle brackets are required
      because "Tech Design" and "Test Report" contain spaces. -->
 
-[feat-002]: <./FEAT-002-capability-taxonomy-and-task-system.md>
-[feat-006]: <./FEAT-006-security-robustness-and-quality-assurance.md>
+[feat-002]: <./capability-taxonomy-and-task-system.md>
+[feat-006]: <../security/security-robustness-and-quality-assurance.md>

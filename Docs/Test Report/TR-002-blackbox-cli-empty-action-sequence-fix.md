@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **ID** | TR-002 |
-| **Verifies** | [FIX-002 Black-box CLI Empty Action Sequence Not Flagged](../Fix/FIX-002-blackbox-cli-empty-action-sequence-not-flagged.md) |
+| **Verifies** | [FIX-002 Black-box CLI Empty Action Sequence Not Flagged](../Fix/agent-integration/blackbox-cli-empty-action-sequence-not-flagged.md) |
 | **Technical Design** | [TD-001 Unified Agent Adapter Protocol](../Tech Design/TD-001-unified-agent-adapter-protocol.md) |
 | **Executed** | 2026-10-22 |
 | **Result** | **Pass** — defect eliminated, no regression in adjacent behaviour |
@@ -67,6 +67,6 @@ The defect is eliminated. The affected trial is now correctly classified, the fa
 - Feature: [FEAT-009 Unified Agent Adapter Protocol][feat-009]
 - Technical Design: [TD-001 Unified Agent Adapter Protocol][td-001]
 
-[fix-002]: <../Fix/FIX-002-blackbox-cli-empty-action-sequence-not-flagged.md>
-[feat-009]: <../Features/FEAT-009-unified-agent-adapter-protocol.md>
+[fix-002]: <../Fix/agent-integration/blackbox-cli-empty-action-sequence-not-flagged.md>
+[feat-009]: <../Features/agent-integration/unified-agent-adapter-protocol.md>
 [td-001]: <../Tech Design/TD-001-unified-agent-adapter-protocol.md>

@@ -355,4 +355,4 @@ Not specified in the source design.
 <!-- Link definitions stay at the bottom of the file. Angle brackets are required
      because the referenced paths may contain spaces. -->
 
-[feat-002]: <./FEAT-002-capability-taxonomy-and-task-system.md>
+[feat-002]: <../task-system/capability-taxonomy-and-task-system.md>

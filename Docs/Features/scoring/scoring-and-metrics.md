@@ -413,4 +413,4 @@ Not specified in the source design.
      because the path contains no spaces but the reference form is kept consistent
      with the template. -->
 
-[feat-002]: <./FEAT-002-capability-taxonomy-and-task-system.md>
+[feat-002]: <../task-system/capability-taxonomy-and-task-system.md>

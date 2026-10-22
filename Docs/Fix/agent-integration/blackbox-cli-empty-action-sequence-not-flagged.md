@@ -87,5 +87,5 @@ The trial record showed `action_sequence: []`, `protocol_violations: []` and ter
 |---|---|---|---|
 | 1 | Should a black-box agent that legitimately produces no observable output on a given step be distinguishable from one that fails to start? | Platform team | No |
 
-[tr-002]: <../Test Report/TR-002-blackbox-cli-empty-action-sequence-fix.md>
-[feat-009]: <../Features/FEAT-009-unified-agent-adapter-protocol.md>
+[tr-002]: <../../Test Report/TR-002-blackbox-cli-empty-action-sequence-fix.md>
+[feat-009]: <../../Features/agent-integration/unified-agent-adapter-protocol.md>

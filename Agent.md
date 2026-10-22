@@ -72,17 +72,20 @@ Docs/
 ├── Feature-Template.md           # Template for feature requirement documents
 ├── Fix-Template.md               # Template for bug fix documents
 ├── Features/                     # Feature requirement documents — the functional design lives here
-│   ├── FEAT-001-platform-scope-and-positioning.md
-│   ├── FEAT-002-capability-taxonomy-and-task-system.md
-│   ├── FEAT-003-evaluation-execution-and-orchestration.md
-│   ├── FEAT-004-scoring-and-metrics.md
-│   ├── FEAT-005-reporting-analysis-and-comparison.md
-│   ├── FEAT-006-security-robustness-and-quality-assurance.md
-│   ├── FEAT-007-user-flows-and-feature-inventory.md
-│   ├── FEAT-008-delivery-roadmap-and-acceptance-criteria.md
-│   └── FEAT-009-unified-agent-adapter-protocol.md
+│   ├── index.md                  # Index of every feature document
+│   ├── platform/
+│   │   ├── platform-scope-and-positioning.md
+│   │   └── delivery-roadmap-and-acceptance-criteria.md
+│   ├── task-system/
+│   ├── agent-integration/
+│   ├── execution/
+│   ├── scoring/
+│   ├── reporting/
+│   ├── security/
+│   └── experience/
 ├── Fix/                          # Bug fix documents
-│   └── FIX-<nnn>-<slug>.md
+│   ├── index.md                  # Index of every fix document
+│   └── agent-integration/
 ├── Tech Design/                  # Technical design documents
 │   └── TD-<nnn>-<slug>.md
 └── Test Report/                  # Verification / test report documents
@@ -94,7 +97,38 @@ series: each capability area of the platform is one Feature document, written to
 `Docs/Feature-Template.md`. `FEAT-007` holds the functional requirement inventory that the
 other features reference.
 
-### 2.1 Templates
+### 2.1 Categories
+
+**One category of requirement lives in one folder.** `Docs/Features/` is organised by
+capability area, and `Docs/Fix/` uses the same category names, so a fix sits next to the
+feature area it affects.
+
+| Category | Covers |
+|---|---|
+| `platform` | Scope, positioning, goals, roles, concept model, delivery plan |
+| `task-system` | Capability taxonomy, task authoring, task sets, difficulty, validation gates |
+| `agent-integration` | The agent adapter protocol and its self-check |
+| `execution` | Evaluation plans, orchestration, budget, concurrency, resume, traces |
+| `scoring` | Scorers, verdicts, metrics, aggregation |
+| `reporting` | Artefacts, run reports, comparison, attribution, leaderboard |
+| `security` | Anti-cheating, adversarial evaluation, quality assurance, contamination, platform health |
+| `experience` | User journeys, screens, interaction principles, permissions, requirement inventory |
+
+A new feature goes into the folder of the capability area it belongs to. If it does not fit
+any existing category, add a new category folder and list it in `Docs/Features/index.md`.
+
+### 2.2 File naming
+
+**Document file names carry the requirement name, not the ID.**
+
+- Feature document: `Docs/Features/<category>/<feature-name>.md` — e.g. `scoring/scoring-and-metrics.md`
+- Fix document: `Docs/Fix/<category>/<fix-name>.md` — e.g. `agent-integration/blackbox-cli-empty-action-sequence-not-flagged.md`
+
+No `FEAT-001-` / `FIX-002-` prefix in the file name. Lower-case, hyphen-separated, and the
+same words as the document title. The ID (`FEAT-001`, `FIX-002`) lives in the document's
+metadata table and is what cross-references cite.
+
+### 2.3 Templates
 
 - **Templates live directly in `Docs/`, never inside a sub-folder.** `Docs/Feature-Template.md` and `Docs/Fix-Template.md` are the single source of truth.
 - Every document in `Docs/Features/` **must** be based on `Docs/Feature-Template.md`.
@@ -102,7 +136,7 @@ other features reference.
 - Deviating from a template requires a reason recorded in the document itself.
 - Templates are deliberately small. A template that nobody fills in is worse than no template.
 
-### 2.2 Cross-references (mandatory)
+### 2.4 Cross-references (mandatory)
 
 | Document | Must reference |
 |---|---|
@@ -124,21 +158,42 @@ References use **Markdown reference-style links** with link definitions at the b
 - Tech Design: [TD-001 Unified Agent Adapter Protocol][td-001]
 - Test Report: [TR-001 Unified Agent Adapter Protocol][tr-001]
 
-[td-001]: <../Tech Design/TD-001-unified-agent-adapter-protocol.md>
-[tr-001]: <../Test Report/TR-001-unified-agent-adapter-protocol.md>
+[td-001]: <../../Tech Design/TD-001-unified-agent-adapter-protocol.md>
+[tr-001]: <../../Test Report/TR-001-unified-agent-adapter-protocol.md>
 ```
 
 Angle brackets are **required** in the path because `Tech Design/` and `Test Report/` contain spaces.
 
 A Feature document without both references is **incomplete**. A Test Report that is not referenced from a Feature or Fix document is **orphaned**.
 
-### 2.3 Identifier namespaces
+### 2.5 Indexes
+
+**Every folder that holds documents has an `index.md`.**
+
+- `Docs/Features/index.md` — lists every feature document, grouped by category.
+- `Docs/Fix/index.md` — lists every fix document, grouped by category.
+- The index is the entry point for that folder: a reader arrives there and finds every document.
+
+**The index covers only the documents in its own folder.** Tech Design and Test Report
+documents are **not** indexed separately — each one is reachable from the `References`
+section of the feature or fix it belongs to, so indexing them again would create a second
+place to keep in sync.
+
+Rules:
+- Every document in the folder **must** appear in the index. A document missing from the
+  index is a defect.
+- The index lists the document ID, its file name, and a one-line summary.
+- The index is updated in the same change that adds or removes a document.
+- Index entries use **inline links** — a table of links is more usable inline. Cross-references
+  *inside* documents use reference-style links, as in §2.4.
+
+### 2.6 Identifier namespaces
 
 Two identifier families coexist and must not be confused:
 
 | Prefix | Meaning | Defined in |
 |---|---|---|
-| `F-<module>-<nn>` | Functional requirement (capability that must exist) | `Docs/Features/FEAT-007` |
+| `F-<module>-<nn>` | Functional requirement (capability that must exist) | `Docs/Features/experience/user-flows-and-feature-inventory.md` |
 | `FEAT-<nnn>` | Feature document (a unit of delivered work) | `Docs/Features/` |
 | `FIX-<nnn>` | Bug fix document | `Docs/Fix/` |
 | `TD-<nnn>` | Technical design document | `Docs/Tech Design/` |

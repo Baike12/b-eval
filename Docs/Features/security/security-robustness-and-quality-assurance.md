@@ -365,5 +365,5 @@ Not specified in the source design.
      because the linked file names contain no spaces, but the pattern is kept
      consistent with the template. -->
 
-[feat-002]: <./FEAT-002-capability-taxonomy-and-task-system.md>
-[feat-004]: <./FEAT-004-scoring-and-metrics.md>
+[feat-002]: <../task-system/capability-taxonomy-and-task-system.md>
+[feat-004]: <../scoring/scoring-and-metrics.md>
