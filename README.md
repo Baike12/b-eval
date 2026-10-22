@@ -1,30 +1,45 @@
 # b-eval
 
-Agent 测评平台（Agent Evaluation Platform）。
+Agent evaluation platform.
 
-## 项目状态
+## Status
 
-| 阶段 | 内容 | 位置 |
+| Stage | Content | Where |
 |---|---|---|
-| 设计方案 | 功能层面设计（不含技术实现） | [`Docs/`](./Docs/README.md) |
-| 技术方案 | 待编写 | — |
-| 实现 | 待启动 | — |
+| Functional design | What the system does (no implementation) | [`Docs/`](./Docs/README.md) |
+| Delivery documents | Features, fixes, technical design, test reports | [`Docs/Features/`](./Docs/Features/), [`Docs/Tech Design/`](<./Docs/Tech Design/>), [`Docs/Test Report/`](<./Docs/Test Report/>), [`Docs/Fix/`](./Docs/Fix/) |
+| Technical design | Architecture and implementation | In progress |
+| Implementation | Not started | — |
 
-## 目录结构
+## Working Rules
+
+Read [`Agent.md`](./Agent.md) before contributing. It defines the English-only language policy, the document templates, the mandatory cross-references between feature, technical design and test report documents, and the identifier namespaces.
+
+[`AGENTS.md`](./AGENTS.md) adds the repository-specific notes on version control.
+
+## Directory Layout
 
 ```
 b-eval/
-├── Docs/          # 设计方案（功能层面）
-└── vendor/        # 第三方开源参考项目的只读副本，不纳入版本管理
+├── Agent.md                 # Operating rules: language policy, templates, cross-references
+├── AGENTS.md                # Repository-specific working rules
+├── Docs/
+│   ├── README.md            # Index of all documentation
+│   ├── Feature-Template.md  # Template for Docs/Features/
+│   ├── Fix-Template.md      # Template for Docs/Fix/
+│   ├── 01..08               # Functional design chapters
+│   ├── Features/            # FEAT-<nnn>-<slug>.md
+│   ├── Fix/                 # FIX-<nnn>-<slug>.md
+│   ├── Tech Design/         # TD-<nnn>-<slug>.md
+│   └── Test Report/         # TR-<nnn>-<slug>.md
+└── vendor/                  # Read-only mirrors of third-party reference projects (not versioned)
 ```
 
-## 参考项目
+## Reference Projects
 
-`vendor/` 下克隆了 24 个高星开源 Agent 测评相关项目，供设计方案比对使用。
-选型依据与逐项借鉴点见 [Docs/README.md 的调研结论](./Docs/README.md#附市面开源项目调研结论)。
+`vendor/` holds 24 high-star open-source projects related to agent evaluation, cloned read-only for design comparison.
+Selection criteria and per-project takeaways: [Docs/README.md §2](./Docs/README.md#2-open-source-landscape-survey).
 
-按类别：
-
-- **基准（benchmark）**：SWE-bench、τ²-bench、τ-bench、OSWorld、WebArena、VisualWebArena、BrowserGym、AgentBench、AgentBoard、AgentDojo、MCPMark、VitaBench、MemoryAgentBench、TheAgentCompany、ClawBench、terminal-bench、MLE-bench、AgentCompass
-- **资源索引**：awesome-evals、ai-agent-benchmark-compendium、Agent 评测综述配套
-- **评测与执行框架**：Inspect AI、OpenAI Evals、SWE-agent、FastChat、promptfoo、DeepEval、AgentScope、agent-lightning
+- **Benchmarks**: SWE-bench, τ²-bench, τ-bench, OSWorld, WebArena, VisualWebArena, BrowserGym, AgentBench, AgentBoard, AgentDojo, MCPMark, VitaBench, MemoryAgentBench, TheAgentCompany, ClawBench, terminal-bench, MLE-bench, AgentCompass
+- **Resource indexes**: awesome-evals, ai-agent-benchmark-compendium, agent evaluation survey companion
+- **Evaluation and execution frameworks**: Inspect AI, OpenAI Evals, SWE-agent, FastChat, promptfoo, DeepEval, AgentScope, agent-lightning

@@ -1,4 +1,5 @@
-# vendor/ 是第三方开源项目的只读参考副本，不纳入本仓库版本管理
+# vendor/ holds read-only mirrors of third-party reference projects.
+# It is not part of this repository's version control.
 /vendor/
 
 # macOS
@@ -10,7 +11,7 @@ __pycache__/
 .venv/
 venv/
 
-# 评测运行产物
+# Evaluation run artefacts
 /runs/
 /outputs/
 *.log
