@@ -1,0 +1,16 @@
+# vendor/ 是第三方开源项目的只读参考副本，不纳入本仓库版本管理
+/vendor/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 评测运行产物
+/runs/
+/outputs/
+*.log
