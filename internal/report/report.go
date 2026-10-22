@@ -166,6 +166,9 @@ type Options struct {
 }
 
 // Build assembles the report of a run.
+//
+// Every collection in the result is present even when it is empty: a nil
+// slice marshals to null, and a client that reads a length off null fails.
 func Build(run domain.Run, reg *metrics.Registry, taskNames map[string]string, opts Options) Report {
 	if opts.Aggregation == "" {
 		opts.Aggregation = metrics.AggMacro
@@ -183,6 +186,7 @@ func Build(run domain.Run, reg *metrics.Registry, taskNames map[string]string, o
 	r := Report{
 		RunID:       run.RunID,
 		GeneratedAt: domain.Now(),
+		Metrics:     []MetricRow{},
 		Plan: PlanInfo{
 			PlanID:         run.Plan.PlanID,
 			TaskSetID:      run.Plan.TaskSetID,
@@ -364,7 +368,7 @@ func buildBreakdown(run domain.Run, reg *metrics.Registry, in metrics.MetricInpu
 		}
 		sort.Strings(keys)
 
-		b := Breakdown{Dimension: d.name}
+		b := Breakdown{Dimension: d.name, Cells: []BreakdownCell{}}
 		for _, k := range keys {
 			subset := cells[k]
 			cellIn := in
@@ -402,6 +406,8 @@ func buildFailures(run domain.Run) FailureAnalysis {
 	fa := FailureAnalysis{
 		TerminationReasons: map[string]int{},
 		FailureClasses:     map[string]int{},
+		FailedTrials:       []FailedTrial{},
+		Scorers:            []ScorerBreakdown{},
 	}
 	scorerStats := map[string]*ScorerBreakdown{}
 	for _, t := range run.Trials {

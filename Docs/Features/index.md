@@ -70,4 +70,5 @@ document reaches its design and its verification.
 
 | ID | Feature | Summary |
 |---|---|---|
-| [FEAT-007](experience/user-flows-and-feature-inventory.md) | User Flows, Feature Inventory and Permissions | The five user journeys, the 69-entry functional requirement inventory, the screen inventory, the seven interaction principles, and the permission model that separates judging rights from submission rights. |
+| [FEAT-007](experience/user-flows-and-feature-inventory.md) | User Flows, Feature Inventory and Permissions | The five user journeys, the 70-entry functional requirement inventory, the screen inventory, the seven interaction principles, and the permission model that separates judging rights from submission rights. |
+| [FEAT-010](experience/interface-language-selection.md) | Interface Language Selection | The language of the interface: Chinese by default, English one click away, the choice remembered, and the closed vocabularies the server publishes presented in the reader's language. |

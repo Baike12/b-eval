@@ -277,8 +277,8 @@ The roadmap advances with **"first make it run, then make it trustworthy, finall
 
 ## References
 
-- Tech Design: [TD-004 M0 Runtime and Quality Gate System][td-004]
-- Test Report: [TR-003 M0 Vertical Slice][tr-003]
+- Tech Design: [TD-004 M0 Runtime and Quality Gate System][td-004], [TD-005 Container Deployment to the Cloud Host][td-005]
+- Test Report: [TR-003 M0 Vertical Slice][tr-003], [TR-004 Container Deployment][tr-004]
 - Platform scope and positioning: [FEAT-001 Platform Scope and Positioning][feat-001]
 - Capability taxonomy and task system: [FEAT-002 Capability Taxonomy and Task System][feat-002]
 - Evaluation execution and orchestration: [FEAT-003 Evaluation Execution and Orchestration][feat-003]
@@ -305,4 +305,6 @@ Not specified in the source design.
 [feat-007]: <../experience/user-flows-and-feature-inventory.md>
 [feat-008]: <./delivery-roadmap-and-acceptance-criteria.md>
 [td-004]: <../../Tech Design/TD-004-m0-runtime-and-quality-gate-system.md>
+[td-005]: <../../Tech Design/TD-005-container-deployment.md>
 [tr-003]: <../../Test Report/TR-003-m0-vertical-slice.md>
+[tr-004]: <../../Test Report/TR-004-container-deployment.md>

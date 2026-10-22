@@ -1,360 +1,1084 @@
 /* The platform's visual language.
  *
- * Two rules drive the styling. A number that carries no coverage is never
- * rendered like a number: it gets its own label and its own colour. And the
- * confidence block is the most prominent element on a report page, because
- * the number without it is not a measurement.
+ * The interface is an instrument console, not a document. Three rules hold it
+ * together.
+ *
+ * 1. A measurement is a quantity on a scale. Every value that has a range
+ *    is drawn as one: a fill, a band for its uncertainty, a notch for its
+ *    threshold. A quantity with no coverage is drawn as an empty track,
+ *    because a metric with no data and a metric whose value is zero are
+ *    different facts and must not look alike.
+ * 2. Colour carries state and nothing else. Teal is the signal colour and
+ *    marks a measured, reportable quantity. Red marks a quantity that
+ *    failed its threshold. Absence is marked with an empty track and grey
+ *    text, never with a hue.
+ * 3. Structure is drawn with rules and space. A sheet is a hairline-edged
+ *    white field with no shadow; hierarchy comes from the type scale and
+ *    the spacing, not from a stack of identical boxes.
  */
 
+@font-face {
+  font-family: 'Archivo';
+  src: url('./assets/fonts/archivo-latin-var.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Plex Mono';
+  src: url('./assets/fonts/plex-mono-400-latin.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Plex Mono';
+  src: url('./assets/fonts/plex-mono-500-latin.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --bg: #ffffff;
-  --fg: #18181b;
-  --muted: #71717a;
-  --line: #e4e4e7;
-  --panel: #fafafa;
-  --accent: #2563eb;
-  --ok: #15803d;
-  --danger: #b91c1c;
-  --custom: #7c3aed;
-  --radius: 8px;
+  --bezel: #14181b;
+  --bezel-raised: #1c2226;
+  --bezel-line: #2b3236;
+  --bezel-ink: #e7eaec;
+  --bezel-muted: #97a1a6;
+
+  --paper: #f7f7f5;
+  --sheet: #ffffff;
+  --rule: #e3e5e4;
+  --rule-strong: #cdd2d1;
+
+  --ink: #171a1c;
+  --ink-2: #3d4548;
+  --muted: #6c7577;
+
+  --signal: #0d6a6e;
+  --signal-deep: #0a5357;
+  --signal-wash: #e3eeee;
+
+  --danger: #a03223;
+  --danger-wash: #f8ebe8;
+
+  --track: #e6e8e8;
+
+  --radius: 6px;
+  /* The Latin faces are self-hosted and carry no CJK glyphs, so the Chinese
+   * font of the reader's system follows them in the stack. A Latin word
+   * still comes from Archivo and a Chinese word from the system font. */
+  --sans: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif;
+  --mono: 'Plex Mono', ui-monospace, SFMono-Regular, Menlo, 'PingFang SC', 'Microsoft YaHei', monospace;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  font-size: 14px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
   line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
-.layout__header {
+/* --- the frame ------------------------------------------------------- */
+
+.app {
+  min-height: 100vh;
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--line);
+  flex-direction: column;
 }
 
-.layout__brand {
-  font-size: 1.25rem;
-  font-weight: 650;
+.bezel {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bezel);
+  border-bottom: 1px solid var(--bezel-line);
+}
+
+.bezel__bar {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--bezel-ink);
+  text-decoration: none;
+  flex: none;
+}
+
+.brand__mark {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.brand__frame {
+  fill: none;
+  stroke: var(--bezel-line);
+  stroke-width: 1.5;
+}
+
+.brand__bars {
+  fill: none;
+  stroke: #37a3a8;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.brand__name {
+  font-size: 16px;
+  font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.layout__tagline {
-  color: var(--muted);
-  font-size: 0.85rem;
+.brand__tag {
+  color: var(--bezel-muted);
+  font-size: 13px;
+  letter-spacing: 0.01em;
 }
 
-.layout__nav {
+.tabs {
   display: flex;
-  gap: 1.25rem;
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid var(--line);
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
-.layout__nav a {
-  color: var(--muted);
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  position: relative;
+  padding: 6px 12px 8px;
+  color: var(--bezel-muted);
   text-decoration: none;
+  font-size: 14px;
   font-weight: 500;
+  white-space: nowrap;
+  border-radius: 4px 4px 0 0;
+  transition: color 120ms ease, background-color 120ms ease;
 }
 
-.layout__nav a.active {
-  color: var(--accent);
+.tab:hover {
+  color: var(--bezel-ink);
+  background: var(--bezel-raised);
 }
 
-.layout__main {
-  max-width: 1200px;
+.tab.is-active {
+  color: #ffffff;
+}
+
+.tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 2px;
+  background: #37a3a8;
+}
+
+.page {
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 40px 28px 96px;
 }
 
-h1 {
-  font-size: 1.4rem;
-  margin: 0 0 0.5rem;
+.page__head {
+  margin-bottom: 34px;
 }
 
-h2 {
-  font-size: 1.05rem;
-  margin: 0 0 0.75rem;
+.page__title {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-h3 {
-  font-size: 0.95rem;
-  margin: 1.25rem 0 0.5rem;
-}
-
-h4 {
-  font-size: 0.85rem;
-  margin: 0.75rem 0 0.35rem;
+.page__lede {
+  margin: 8px 0 0;
+  max-width: 68ch;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 14.5px;
 }
 
-.muted {
+/* --- sections -------------------------------------------------------- */
+
+.section {
+  margin-bottom: 38px;
+}
+
+.section__head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.section__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.section__note {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.sheet {
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.sheet--flush {
+  overflow: hidden;
+}
+
+.sheet__body {
+  padding: 20px 22px;
+}
+
+.sheet__foot {
+  padding: 14px 22px;
+  border-top: 1px solid var(--rule);
+  background: #fbfbfa;
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-size: 13.5px;
   color: var(--muted);
 }
 
-.empty {
+/* --- status strip ---------------------------------------------------- */
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.status__cell {
+  flex: 1 1 170px;
+  padding: 14px 20px;
+  border-right: 1px solid var(--rule);
+}
+
+.status__cell:last-child {
+  border-right: none;
+}
+
+.status__label {
+  display: block;
+  font-size: 12px;
   color: var(--muted);
-  background: var(--panel);
-  border: 1px dashed var(--line);
-  border-radius: var(--radius);
-  padding: 1rem;
+  margin-bottom: 3px;
 }
 
-.error {
-  color: var(--danger);
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: var(--radius);
-  padding: 0.75rem 1rem;
+.status__value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
-.notice {
-  color: var(--fg);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 0.6rem 0.9rem;
+.status__value--mono {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  font-weight: 400;
 }
 
-.panel {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  margin: 1.25rem 0;
-  background: var(--bg);
+.pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--signal);
+  flex: none;
 }
+
+.pulse--danger {
+  background: var(--danger);
+}
+
+/* --- the confidence band --------------------------------------------- */
 
 .confidence {
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--ok);
+  --band: var(--signal);
+  --band-wash: var(--signal-wash);
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--band);
   border-radius: var(--radius);
-  padding: 1.25rem;
-  margin: 1.25rem 0;
-  background: #f0fdf4;
+  margin-bottom: 34px;
+  overflow: hidden;
 }
 
 .confidence--insufficient {
-  border-left-color: var(--danger);
-  background: #fef2f2;
+  --band: var(--danger);
+  --band-wash: var(--danger-wash);
 }
 
-.confidence__header {
+.confidence__head {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
+  padding: 15px 22px;
+  background: var(--band-wash);
+  border-bottom: 1px solid var(--rule);
 }
 
-.confidence__header h2 {
+.confidence__head h2 {
   margin: 0;
-}
-
-.confidence__reason {
-  color: var(--danger);
-  font-weight: 500;
-}
-
-.confidence__grid,
-.main-score {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-top: 0.75rem;
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  min-width: 10rem;
-}
-
-.stat__label {
-  color: var(--muted);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.stat__value {
-  font-size: 1.5rem;
-  font-variant-numeric: tabular-nums;
+  font-size: 16px;
   font-weight: 600;
 }
 
-.stat--large .stat__value {
-  font-size: 2.1rem;
+.confidence__reason {
+  margin: 0;
+  padding: 13px 22px;
+  color: var(--danger);
+  font-size: 14px;
+  border-bottom: 1px solid var(--rule);
 }
 
-.stat__note {
+.confidence__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.gauge {
+  padding: 18px 22px;
+  border-right: 1px solid var(--rule);
+}
+
+.gauge:last-child {
+  border-right: none;
+}
+
+.gauge__label {
+  display: block;
+  font-size: 12.5px;
   color: var(--muted);
-  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+.gauge__value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge__unit {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+
+.gauge__note {
+  margin: 7px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.gauge__note b {
+  font-weight: 500;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge__axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- labelled facts -------------------------------------------------- */
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 34px;
+  margin: 0;
+}
+
+/* A fact list under a section heading needs air, and a fact list inside a
+   page header sits directly under the lede and needs none. */
+.section__head + .facts,
+.page__head .facts {
+  margin-top: 14px;
+}
+
+.page__head .facts {
+  margin-top: 18px;
+}
+
+.section .facts + .sheet,
+.section .facts + .page__lede {
+  margin-top: 16px;
+}
+
+.section .page__lede + .sheet {
+  margin-top: 16px;
+}
+
+.facts__item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.facts__label {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.facts__value {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.table--pairs .facts {
+  gap: 4px 22px;
+}
+
+/* --- the measurement scale ------------------------------------------- */
+
+.meter {
+  position: relative;
+  display: block;
+  height: 8px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: var(--track);
+  overflow: visible;
+}
+
+.meter__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  min-width: 2px;
+  border-radius: 999px;
+  background: var(--signal);
+}
+
+.meter--danger .meter__fill {
+  background: var(--danger);
+}
+
+.meter__notch {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+
+.meter--void {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--track) 0 2px,
+    transparent 2px 6px
+  );
+}
+
+/* The scale is a track with a band and a point mark on it.
+ *
+ * The track is the positioning context of its marks, so a percentage on a
+ * mark is a percentage of the track itself. A mark has a width of its own,
+ * so a reading at either end of the scale is clamped inside the track: a
+ * reader must be able to tell a reading of zero from a reading that ran off
+ * the end of the scale. */
+.range {
+  position: relative;
+  display: block;
+  height: 10px;
+  min-width: 90px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--track);
+  --mark: 2px;
+  --mark-half: 1px;
+}
+
+.range__band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--from, 0%);
+  width: calc(var(--to, 0%) - var(--from, 0%));
+  max-width: 100%;
+  border-radius: 2px;
+  background: #9fc9cb;
+}
+
+.range__point {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: max(0px, min(calc(var(--at, 0%) - var(--mark-half)), calc(100% - var(--mark))));
+  width: var(--mark);
+  border-radius: 1px;
+  background: var(--signal-deep);
+}
+
+.range--void {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--track) 0 2px,
+    transparent 2px 6px
+  );
+}
+
+.range--large {
+  height: 14px;
+  min-width: 0;
+  border-radius: 3px;
+  --mark: 3px;
+  --mark-half: 1.5px;
+}
+
+/* The point mark on the main score is the reading itself, so it is wider
+   and darker than the mark on a metric row. */
+.range--large .range__point {
+  top: -5px;
+  bottom: -5px;
+  background: var(--ink);
+}
+
+/* An interval of zero width is still an interval. It is drawn as a narrow
+   band rather than left out, so that a reader cannot mistake it for an
+   interval that was never computed. */
+.range__band--point {
+  min-width: 3px;
+  left: min(var(--from, 0%), calc(100% - 3px));
+  background: var(--signal-deep);
+}
+
+/* --- the score figure ------------------------------------------------ */
+
+.figure {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+.figure__readout {
+  min-width: 0;
+}
+
+.figure__caption {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.figure__value {
+  display: block;
+  font-size: 46px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.figure__value--small {
+  font-size: 24px;
+}
+
+.figure__interval {
+  margin-top: 9px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* The main score draws the interval on a scale of its own, so the method
+   name belongs beside the bounds rather than under them. */
+.figure__interval .ci {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.figure__scale {
+  padding-top: 22px;
+}
+
+.figure__axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.figure__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 18px 26px;
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule);
+}
+
+.fact__label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.fact__value {
+  display: block;
+  font-size: 19px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.fact__note {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* --- tables ---------------------------------------------------------- */
+
+.table-scroll {
+  overflow-x: auto;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.88rem;
-}
-
-.table th,
-.table td {
-  text-align: left;
-  padding: 0.5rem 0.6rem;
-  border-bottom: 1px solid var(--line);
-  vertical-align: top;
+  font-size: 14px;
 }
 
 .table th {
+  text-align: left;
+  padding: 11px 18px;
+  background: #fafaf9;
+  border-bottom: 1px solid var(--rule-strong);
   color: var(--muted);
+  font-size: 12px;
   font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: #fafaf9;
+}
+
+.table--numeric td.is-number,
+.table--numeric th.is-number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .table--pairs th {
-  width: 12rem;
-  text-transform: none;
-  letter-spacing: 0;
+  width: 190px;
+  color: var(--muted);
+  font-weight: 500;
+  background: transparent;
+}
+
+.table--pairs td {
+  vertical-align: middle;
+}
+
+/* --- value forms ----------------------------------------------------- */
+
+.value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.ci {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.ci__text {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.ci__method {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.coverage {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.coverage--none {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.coverage--none::before {
+  content: '';
+  display: inline-block;
+  width: 22px;
+  height: 8px;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-radius: 2px;
+  background: repeating-linear-gradient(-45deg, var(--track) 0 2px, transparent 2px 6px);
 }
 
 .metric__name {
   display: block;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-.metric__id,
-.metric__description,
-.metric__definition,
 .metric__aggregation {
   display: block;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 12px;
+}
+
+.metric__id {
+  display: block;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.metric__description {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 46ch;
+}
+
+.metric__definition {
+  display: block;
+  color: var(--muted);
+  font-size: 12.5px;
 }
 
 .metric__formula {
+  font-family: var(--mono);
+  font-size: 12px;
   color: var(--muted);
-  font-size: 0.8rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-.badge {
-  display: inline-block;
-  padding: 0.05rem 0.45rem;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  font-size: 0.72rem;
-  font-weight: 600;
+.metric__fraction {
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.badge--ok,
-.badge--builtin {
-  color: var(--ok);
-  border-color: #bbf7d0;
-  background: #f0fdf4;
+/* --- chips ----------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--rule-strong);
+  background: #fbfbfa;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.badge--danger {
+.chip--ok {
+  border-color: #b9d9d4;
+  background: var(--signal-wash);
+  color: var(--signal-deep);
+}
+
+.chip--danger {
+  border-color: #e6c3bc;
+  background: var(--danger-wash);
   color: var(--danger);
-  border-color: #fecaca;
-  background: #fef2f2;
 }
 
-.badge--custom {
-  color: var(--custom);
-  border-color: #ddd6fe;
-  background: #f5f3ff;
+.chip--running {
+  border-color: #d8d3c0;
+  background: #f7f4ea;
+  color: #7a6316;
 }
 
-.badge--form {
-  color: var(--fg);
-  background: var(--panel);
+.chip--custom {
+  border-style: dashed;
 }
 
-.coverage--none {
-  color: var(--danger);
-  font-style: italic;
-  font-weight: 600;
-}
-
-.coverage--ok {
-  color: var(--muted);
-}
-
-.value {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-
-.interval {
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
-
-.interval__method {
-  font-size: 0.75rem;
-}
+/* --- forms ----------------------------------------------------------- */
 
 .form {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 16px;
   align-items: flex-end;
 }
 
 .form label {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  font-size: 0.8rem;
+  gap: 6px;
+  font-size: 13px;
   color: var(--muted);
 }
 
 .form input,
 .form select {
-  padding: 0.4rem 0.5rem;
-  border: 1px solid var(--line);
-  border-radius: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  background: var(--sheet);
   font: inherit;
-  color: var(--fg);
-  min-width: 12rem;
+  font-size: 14px;
+  color: var(--ink);
+  min-width: 180px;
 }
 
-button {
-  padding: 0.45rem 0.9rem;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--fg);
-  color: var(--bg);
-  font: inherit;
-  font-weight: 500;
-  cursor: pointer;
+.form input:hover,
+.form select:hover {
+  border-color: #b3bab9;
 }
 
-button:disabled {
-  background: var(--muted);
+.form input:focus-visible,
+.form select:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 1px;
+  border-color: var(--signal);
+}
+
+.form input:disabled,
+.form select:disabled {
+  background: #f4f5f5;
+  color: #9aa2a3;
   cursor: not-allowed;
 }
 
-.list {
+button {
+  padding: 9px 16px;
+  border: 1px solid var(--signal-deep);
+  border-radius: 4px;
+  background: var(--signal);
+  color: #ffffff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--signal-deep);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--signal-deep);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  background: #c3cbcc;
+  border-color: #c3cbcc;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: var(--sheet);
+  color: var(--ink-2);
+  border-color: var(--rule-strong);
+  padding: 5px 11px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+button.secondary:hover:not(:disabled) {
+  background: #f2f3f3;
+  border-color: #b3bab9;
+}
+
+/* --- language switch -------------------------------------------------- */
+
+/* The switch sits in the bezel because the language of the interface is a
+ * property of the reader, not of the screen they happen to be on. */
+.locale {
+  flex: none;
+  display: inline-flex;
+  border: 1px solid var(--bezel-line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.locale__option {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--bezel-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.locale__option:hover:not(:disabled) {
+  background: var(--bezel-raised);
+  color: var(--bezel-ink);
+}
+
+.locale__option.is-active {
+  background: var(--bezel-raised);
+  color: var(--bezel-ink);
+  box-shadow: inset 0 -2px 0 #37a3a8;
+}
+
+.locale__option:focus-visible {
+  outline: 2px solid #37a3a8;
+  outline-offset: -2px;
+}
+
+/* --- notices --------------------------------------------------------- */
+
+.notice {
+  margin: 14px 0 0;
+  padding: 11px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+  background: #fbfbfa;
+  font-size: 14px;
+}
+
+.notice--error {
+  border-color: #e6c3bc;
+  background: var(--danger-wash);
+  color: var(--danger);
+}
+
+.empty {
+  margin: 0;
+  padding: 26px 22px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.empty__hint {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+/* --- run list -------------------------------------------------------- */
+
+.runlist {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.list li {
-  padding: 0.35rem 0;
-  border-bottom: 1px solid var(--line);
+.runlist li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--rule);
 }
+
+.runlist li:last-child {
+  border-bottom: none;
+}
+
+.runlist__id {
+  font-family: var(--mono);
+  font-size: 13px;
+  flex: none;
+}
+
+.runlist__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.runlist__status {
+  margin-left: auto;
+  flex: none;
+}
+
+/* --- distribution lists ---------------------------------------------- */
 
 .dist {
   list-style: none;
@@ -365,27 +1089,142 @@ button:disabled {
 .dist li {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.2rem 0;
-  font-size: 0.85rem;
+  gap: 16px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+}
+
+.dist li:last-child {
+  border-bottom: none;
 }
 
 .dist__count {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .failures__grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+}
+
+.failures__trials {
+  margin-top: 30px;
+}
+
+.breakdown + .breakdown {
+  margin-top: 26px;
+}
+
+.breakdown .table {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+}
+
+.subhead {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
 }
 
 .instruction {
-  font-size: 1rem;
+  font-size: 15px;
   line-height: 1.6;
+  max-width: 72ch;
 }
 
-.breakdown {
-  margin-bottom: 1.5rem;
+.muted {
+  color: var(--muted);
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.link {
+  color: var(--signal-deep);
+  text-decoration: none;
+  border-bottom: 1px solid #b9d9d4;
+}
+
+.link:hover {
+  border-bottom-color: var(--signal-deep);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+a {
+  color: var(--signal-deep);
+}
+
+/* --- responsive ------------------------------------------------------ */
+
+@media (max-width: 860px) {
+  .bezel__bar {
+    height: auto;
+    padding: 12px 20px 0;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+  }
+
+  .tabs {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .page {
+    padding: 30px 20px 72px;
+  }
+
+  .figure {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .figure__scale {
+    padding-top: 0;
+  }
+
+  .confidence__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gauge {
+    border-right: none;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .gauge:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Chinese typesetting ---------------------------------------------- */
+
+/* The Latin type scale carries a negative letter-spacing, which opens up
+ * the word spacing of a Latin word. A Chinese glyph is square and dense
+ * already, and a negative tracking crowds it, so the Chinese document
+ * carries no tracking at all. */
+html[lang='zh-CN'] .brand__name,
+html[lang='zh-CN'] .brand__tag,
+html[lang='zh-CN'] .page__title,
+html[lang='zh-CN'] .section__title,
+html[lang='zh-CN'] .table th {
+  letter-spacing: 0;
 }

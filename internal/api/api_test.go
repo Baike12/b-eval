@@ -276,3 +276,64 @@ func TestTheDataDirectoryIsCreatedOnDemand(t *testing.T) {
 		t.Fatalf("the data directory does not exist: %v", err)
 	}
 }
+
+// The client reads the custom kinds by key, so a key that changes case
+// breaks the registration form silently: the field arrives as undefined and
+// the option carries no value.
+func TestMetricsListPublishesSnakeCaseCustomKinds(t *testing.T) {
+	ts := newTestServer(t)
+	code, body := get(t, ts.URL+"/api/metrics")
+	if code != http.StatusOK {
+		t.Fatalf("status = %d: %s", code, body)
+	}
+	var decoded struct {
+		CustomKinds []map[string]any `json:"custom_kinds"`
+	}
+	if err := json.Unmarshal(body, &decoded); err != nil {
+		t.Fatalf("decode: %v: %s", err, body)
+	}
+	if len(decoded.CustomKinds) == 0 {
+		t.Fatal("no custom kind was published")
+	}
+	for _, kind := range decoded.CustomKinds {
+		name, _ := kind["name"].(string)
+		if name == "" {
+			t.Errorf("a custom kind has no name: %v", kind)
+			continue
+		}
+		if _, ok := kind["description"]; !ok {
+			t.Errorf("custom kind %q has no description key", name)
+		}
+		params, ok := kind["required_params"]
+		if !ok {
+			t.Errorf("custom kind %q has no required_params key", name)
+			continue
+		}
+		if _, ok := params.([]any); !ok {
+			t.Errorf("custom kind %q has required_params of type %T", name, params)
+		}
+	}
+}
+
+// The response must not publish the deployment's own file layout. A missing
+// record is named by what was looked for, and the path stays in the server.
+func TestMissingRecordResponseDoesNotLeakTheDataDirectory(t *testing.T) {
+	root := filepath.Join(t.TempDir(), "data")
+	ts := httptest.NewServer(NewServer(store.New(root)).Handler())
+	defer ts.Close()
+	for _, path := range []string{"/api/runs/nope", "/api/runs/nope/report", "/api/tasksets/nope/v1"} {
+		code, body := get(t, ts.URL+path)
+		if code != http.StatusNotFound {
+			t.Errorf("%s: status = %d, want 404", path, code)
+		}
+		if bytes.Contains(body, []byte(root)) {
+			t.Errorf("%s: the response names the data directory: %s", path, body)
+		}
+		if bytes.Contains(body, []byte("no such file")) {
+			t.Errorf("%s: the response carries the raw file error: %s", path, body)
+		}
+		if !bytes.Contains(body, []byte("does not exist")) {
+			t.Errorf("%s: the response does not say what was missing: %s", path, body)
+		}
+	}
+}

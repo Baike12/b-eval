@@ -8,6 +8,7 @@ package store
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -23,6 +24,12 @@ type Store struct {
 	root string
 	mu   sync.RWMutex
 }
+
+// ErrNotFound reports that a record is not in the store.
+//
+// The error carries the file name rather than the path, because the path is
+// the deployment's own layout and a client has no use for it.
+var ErrNotFound = errors.New("not found")
 
 // New returns a store rooted at the given directory.
 func New(root string) *Store {
@@ -204,10 +211,13 @@ func (s *Store) each(dir, suffix string, fn func(path string) error) error {
 func readJSONFile(path string, out any) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("read %s: %w", path, err)
+		if os.IsNotExist(err) {
+			return fmt.Errorf("%w: %s", ErrNotFound, filepath.Base(path))
+		}
+		return fmt.Errorf("read %s: %w", filepath.Base(path), err)
 	}
 	if err := json.Unmarshal(data, out); err != nil {
-		return fmt.Errorf("parse %s: %w", path, err)
+		return fmt.Errorf("parse %s: %w", filepath.Base(path), err)
 	}
 	return nil
 }

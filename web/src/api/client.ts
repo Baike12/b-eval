@@ -1,3 +1,4 @@
+import { translateNow } from '../i18n'
 import type {
   Agent,
   MetricsResponse,
@@ -29,10 +30,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const text = await response.text()
   const payload = text ? safeParse(text) : null
   if (!response.ok) {
+    // The server's own message is shown as it is: it names the object the
+    // request was about, and the platform speaks one language to its
+    // clients. Only the fallback, which the server did not write, is a
+    // message of the interface.
     const message =
       payload && typeof payload === 'object' && 'error' in payload
         ? String((payload as { error: unknown }).error)
-        : `request failed with status ${response.status}`
+        : translateNow('common.requestFailed', { status: response.status })
     throw new ApiError(response.status, message, payload)
   }
   return payload as T
@@ -46,40 +51,45 @@ function safeParse(text: string): unknown {
   }
 }
 
-export const api = {
-  health: () => request<{ status: string; task_sets: number; time: string }>('/api/healthz'),
+// The API is mounted under the same base path as the bundle. An absolute
+// /api/ path would collide with another application when the platform is
+// served from a prefix such as /eval/ on a shared host.
+const API = `${import.meta.env.BASE_URL}api`
 
-  listTaskSets: () => request<TaskSet[]>('/api/tasksets'),
+export const api = {
+  health: () => request<{ status: string; task_sets: number; time: string }>(`${API}/healthz`),
+
+  listTaskSets: () => request<TaskSet[]>(`${API}/tasksets`),
   getTaskSet: (id: string, version: string) =>
-    request<TaskSet>(`/api/tasksets/${encodeURIComponent(id)}/${encodeURIComponent(version)}`),
+    request<TaskSet>(`${API}/tasksets/${encodeURIComponent(id)}/${encodeURIComponent(version)}`),
   createTaskSet: (payload: unknown) =>
-    request<TaskSet>('/api/tasksets', { method: 'POST', body: JSON.stringify(payload) }),
+    request<TaskSet>(`${API}/tasksets`, { method: 'POST', body: JSON.stringify(payload) }),
   addTask: (id: string, version: string, task: Task) =>
-    request<Task>(`/api/tasksets/${encodeURIComponent(id)}/${encodeURIComponent(version)}/tasks`, {
+    request<Task>(`${API}/tasksets/${encodeURIComponent(id)}/${encodeURIComponent(version)}/tasks`, {
       method: 'POST',
       body: JSON.stringify(task),
     }),
 
-  listAgents: () => request<Agent[]>('/api/agents'),
+  listAgents: () => request<Agent[]>(`${API}/agents`),
   createAgent: (payload: unknown) =>
-    request<Agent>('/api/agents', { method: 'POST', body: JSON.stringify(payload) }),
+    request<Agent>(`${API}/agents`, { method: 'POST', body: JSON.stringify(payload) }),
   selfCheck: (id: string) =>
-    request<Agent['self_check']>(`/api/agents/${encodeURIComponent(id)}/selfcheck`, {
+    request<Agent['self_check']>(`${API}/agents/${encodeURIComponent(id)}/selfcheck`, {
       method: 'POST',
       body: '{}',
     }),
 
-  listMetrics: () => request<MetricsResponse>('/api/metrics'),
+  listMetrics: () => request<MetricsResponse>(`${API}/metrics`),
   registerMetric: (payload: unknown) =>
-    request<unknown>('/api/metrics', { method: 'POST', body: JSON.stringify(payload) }),
+    request<unknown>(`${API}/metrics`, { method: 'POST', body: JSON.stringify(payload) }),
 
-  listRuns: () => request<Run[]>('/api/runs'),
+  listRuns: () => request<Run[]>(`${API}/runs`),
   createRun: (payload: unknown) =>
-    request<Run>('/api/runs', { method: 'POST', body: JSON.stringify(payload) }),
-  getRun: (id: string) => request<Run>(`/api/runs/${encodeURIComponent(id)}`),
-  getReport: (id: string) => request<Report>(`/api/runs/${encodeURIComponent(id)}/report`),
+    request<Run>(`${API}/runs`, { method: 'POST', body: JSON.stringify(payload) }),
+  getRun: (id: string) => request<Run>(`${API}/runs/${encodeURIComponent(id)}`),
+  getReport: (id: string) => request<Report>(`${API}/runs/${encodeURIComponent(id)}/report`),
   compare: (a: string, b: string) =>
     request<{ a: Report; b: Report; difference: Record<string, number> }>(
-      `/api/compare?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`,
+      `${API}/compare?a=${encodeURIComponent(a)}&b=${encodeURIComponent(b)}`,
     ),
 }

@@ -123,6 +123,22 @@ export interface PlanInfo {
   fingerprint: string
 }
 
+// RunPlan is the plan as the run list publishes it.
+//
+// The report's plan carries the fingerprint of the scoring configuration and
+// the run list's plan does not, so the two shapes are declared separately: a
+// screen that read a fingerprint off a run list would get nothing and fail
+// on it.
+export interface RunPlan {
+  plan_id: string
+  task_set_id: string
+  task_set_version: string
+  agent_id: string
+  repetitions: number
+  aggregation: string
+  ci_method: string
+}
+
 export interface Report {
   run_id: string
   generated_at: string
@@ -214,7 +230,7 @@ export interface Agent {
 
 export interface Run {
   run_id: string
-  plan: PlanInfo
+  plan: RunPlan
   status: string
   started_at: string
   finished_at?: string

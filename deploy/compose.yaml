@@ -1,0 +1,34 @@
+# Container definition for the b-eval platform.
+#
+# The container is published on the loopback interface because the host's
+# nginx is the public face of the platform. The bundle is built with a base
+# path, so the platform is reachable under a prefix such as /eval/ and its
+# API paths do not collide with the /api/ of the host's other application.
+#
+# Set B_EVAL_BIND=0.0.0.0 to publish the port directly, which also requires
+# a security group rule for the port.
+services:
+  b-eval:
+    image: b-eval:${B_EVAL_TAG:-latest}
+    container_name: b-eval
+    restart: unless-stopped
+    ports:
+      - "${B_EVAL_BIND:-127.0.0.1}:${B_EVAL_PORT:-8091}:8091"
+    volumes:
+      - ${B_EVAL_DATA_DIR:-/opt/b-eval/data}:/app/data
+    environment:
+      TZ: Asia/Shanghai
+    # The platform writes only to the data directory, so the root filesystem
+    # is read-only and the container holds no Linux capabilities.
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

@@ -320,8 +320,9 @@ Not specified in the source design.
 ## References
 
 - Tech Design: Not yet created.
-- Test Report: Not yet created.
+- Test Report: [TR-006 Report Collection Contract][tr-006] (the contract the published report is held to), [TR-007 Scale Mark Geometry][tr-007] (the geometry that carries the published values).
 - Sibling design chapter referenced by this feature: [FEAT-004 Scoring and Metrics][feat-004] (source §4.3.1 disaggregation dimensions, referenced from §5.2.3).
+- Fixes that changed what this feature publishes: [FIX-003 Report Null Collection Blanks the Report Screen][fix-003], [FIX-004 Scale Mark Overhung the Track at the Ends of the Scale][fix-004].
 
 ## Open Questions
 
@@ -332,3 +333,7 @@ Not specified in the source design.
 <!-- Link definitions stay at the bottom of the file. -->
 
 [feat-004]: <../scoring/scoring-and-metrics.md>
+[tr-006]: <../../Test Report/TR-006-report-collection-contract.md>
+[tr-007]: <../../Test Report/TR-007-scale-mark-geometry.md>
+[fix-003]: <../../Fix/reporting/report-null-collection-blanks-the-report-screen.md>
+[fix-004]: <../../Fix/reporting/scale-mark-overhung-the-track-at-the-ends-of-the-scale.md>

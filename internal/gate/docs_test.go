@@ -44,6 +44,29 @@ func TestEnglishCheckFailsOnChineseText(t *testing.T) {
 	}
 }
 
+func TestEnglishCheckPassesOnATranslationCatalogue(t *testing.T) {
+	root := t.TempDir()
+	// The catalogue of the Chinese locale is the one text in the tree that
+	// is not English, and the gate must let it through.
+	writeFile(t, root, "web/src/i18n/locales/zh-CN.ts", "export const zh = { title: '\u4e2d\u6587' }\n")
+	writeFile(t, root, "web/src/main.tsx", "export const title = 'English'\n")
+	res := EnglishCheck(root).Run(context.Background())
+	if res.Status != StatusPassed {
+		t.Fatalf("status = %s, detail = %s", res.Status, res.Detail)
+	}
+}
+
+func TestEnglishCheckFailsOnChineseOutsideTheCatalogue(t *testing.T) {
+	root := t.TempDir()
+	// The exemption covers the catalogue alone: a screen that carries
+	// Chinese text is still a defect.
+	writeFile(t, root, "web/src/routes/Dashboard.tsx", "export const title = '\u4e2d\u6587'\n")
+	res := EnglishCheck(root).Run(context.Background())
+	if res.Status != StatusFailed {
+		t.Fatalf("status = %s, want failed", res.Status)
+	}
+}
+
 func TestLinksCheckPassesOnResolvableLinks(t *testing.T) {
 	root := t.TempDir()
 	writeFile(t, root, "Docs/a.md", "[b](b.md)\n\n[ref][r]\n\n[r]: <b.md>\n")

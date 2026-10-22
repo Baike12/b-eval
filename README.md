@@ -18,6 +18,7 @@ task data  →  agent under test  →  verdict per trial  →  metrics  →  rep
 | Delivery documents | Features, fixes, technical design, test reports | [`Docs/Features/index.md`](./Docs/Features/index.md), [`Docs/Fix/index.md`](./Docs/Fix/index.md) |
 | Technical design | Architecture and implementation | [`Docs/Tech Design/`](<./Docs/Tech Design/>) |
 | Implementation | The M0 vertical slice — Go backend, React frontend, quality gates | [`cmd/`](./cmd), [`internal/`](./internal), [`web/`](./web) |
+| Deployment | The container deployment to the target host | [`deploy/`](./deploy), [`scripts/deploy.sh`](./scripts/deploy.sh) |
 
 The M0 slice is verified by [TR-003 M0 Vertical Slice](<./Docs/Test Report/TR-003-m0-vertical-slice.md>).
 
@@ -35,6 +36,37 @@ go run ./cmd/b-eval serve -addr 127.0.0.1:8091 -data data
 ```
 
 The API is under `/api`; the browser interface is at the root.
+
+## Deploying
+
+The platform runs as a container on the target host and is served under the `/eval/` prefix by
+the host's existing nginx. The binary is cross-compiled on the developer machine, the runtime
+image is built on the server, and the container is published on the loopback interface.
+
+```bash
+# Name the deployment target. The address is deliberately not kept in the
+# repository, so it has to be supplied by whoever deploys.
+export B_EVAL_HOST=root@your-host
+
+# Build the frontend and the linux/amd64 binary, ship it, and start the container.
+bash scripts/deploy.sh --tag $(date -u +%Y%m%d-%H%M)
+
+# Check that the deployed platform is alive.
+ssh "$B_EVAL_HOST" 'curl -fsS http://127.0.0.1/eval/api/healthz'
+```
+
+The platform is at **http://<host>/eval/** on that host. The server needs neither a Go
+toolchain nor a Node toolchain, and the transfer is the size of the binary rather than the
+size of an image. The records live in `/opt/b-eval/data`, a bind mount, so they survive a
+container that is replaced.
+
+No security group rule is needed: the platform is reached on port 80, which the host's
+security group already opens. The base path is a build parameter, because the bundle carries
+the asset, API and route prefixes; `--base-path` sets it on both the bundle and the nginx
+route.
+
+The design is in [TD-005 Container Deployment](<./Docs/Tech Design/TD-005-container-deployment.md>)
+and the verification is in [TR-004 Container Deployment](<./Docs/Test Report/TR-004-container-deployment.md>).
 
 ## The Quality Gate
 
@@ -76,7 +108,8 @@ b-eval/
 │   ├── gate/                # The quality gate runner and the checks
 │   └── web/                 # The embedded single-page application
 ├── web/                     # The frontend source: TypeScript and React
-├── scripts/                 # build.sh · gate.sh · gate-smoke.sh
+├── scripts/                 # build.sh · deploy.sh · gate.sh · gate-smoke.sh
+├── deploy/                  # The container deployment: image, compose, host scripts, nginx
 ├── Docs/
 │   ├── README.md            # Index of all documentation
 │   ├── Feature-Template.md  # Template for Docs/Features/

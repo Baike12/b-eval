@@ -16,7 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["vitest/importMeta"]
+    "types": ["vitest/importMeta", "vite/client"]
   },
   "include": ["src", "vite.config.ts"]
 }

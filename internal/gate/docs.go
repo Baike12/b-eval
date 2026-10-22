@@ -54,6 +54,32 @@ var excludedDirs = map[string]bool{
 	".venv":        true,
 }
 
+// translationDirs are the directories that hold the interface's
+// translation catalogues.
+//
+// The catalogue of a non-English locale is the one text in the repository
+// that is not written in English: it is the product's own second language,
+// and a reader has to be able to read it. The keys stay English, so the
+// catalogue is a table of values and not a body of prose.
+var translationDirs = []string{
+	filepath.Join("web", "src", "i18n"),
+}
+
+// isTranslationDir reports whether a directory holds translation
+// catalogues.
+func isTranslationDir(root, path string) bool {
+	rel, err := filepath.Rel(root, path)
+	if err != nil {
+		return false
+	}
+	for _, dir := range translationDirs {
+		if rel == dir {
+			return true
+		}
+	}
+	return false
+}
+
 // EnglishCheck verifies that no CJK text entered the repository.
 func EnglishCheck(root string) Check {
 	return DocsCheck{
@@ -69,6 +95,9 @@ func EnglishCheck(root string) Check {
 				}
 				if info.IsDir() {
 					if excludedDirs[info.Name()] {
+						return filepath.SkipDir
+					}
+					if isTranslationDir(root, path) {
 						return filepath.SkipDir
 					}
 					return nil

@@ -16,11 +16,11 @@ import (
 // language out of the report path.
 type CustomKind struct {
 	// Name is the kind identifier a registration uses.
-	Name string
+	Name string `json:"name"`
 	// Description explains what the kind computes.
-	Description string
+	Description string `json:"description"`
 	// RequiredParams lists the parameters a registration must supply.
-	RequiredParams []string
+	RequiredParams []string `json:"required_params"`
 }
 
 // CustomKinds lists the computations available for registration.
@@ -37,12 +37,14 @@ func CustomKinds() []CustomKind {
 			RequiredParams: []string{"min_chars", "max_chars"},
 		},
 		{
-			Name:        "exact_reference_match",
-			Description: "Share of trials whose answer equals the task's reference answer.",
+			Name:           "exact_reference_match",
+			Description:    "Share of trials whose answer equals the task's reference answer.",
+			RequiredParams: []string{},
 		},
 		{
-			Name:        "step_budget_respected",
-			Description: "Share of trials that finished within the task's declared step budget.",
+			Name:           "step_budget_respected",
+			Description:    "Share of trials that finished within the task's declared step budget.",
+			RequiredParams: []string{},
 		},
 	}
 }

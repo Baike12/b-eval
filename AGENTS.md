@@ -41,6 +41,10 @@ Only these may appear in their original form:
 1. **Proper nouns and third-party names** — `SWE-bench`, `WebArena`, `τ-bench`. These are names, not prose.
 2. **Direct quotations from external sources**, when the original wording is the point. Add a short English gloss if the quote carries meaning.
 3. **Legal or contractual text** that must stay verbatim, with an English translation attached.
+4. **The translation catalogues of the interface** — `web/src/i18n/`. The catalogue of a
+   non-English locale is the product's own second language and a reader has to be able to read
+   it. Its **keys stay English**; only the values are translated. Nothing outside that
+   directory may hold the text of a translation.
 
 A foreign-language *word* used because there is no established English equivalent is not an
 exception — find the English term or write a description.
@@ -52,17 +56,19 @@ Before committing, verify no CJK or other non-Latin text has entered the tree:
 ```bash
 # CJK-specific check (primary gate)
 grep -rnP '[\x{4e00}-\x{9fff}\x{3400}-\x{4dbf}\x{3000}-\x{303f}\xff00-\xffef]' \
-  --exclude-dir=vendor --exclude-dir=.git .
+  --exclude-dir=vendor --exclude-dir=.git --exclude-dir=i18n .
 
 # Broader non-ASCII check (secondary; catches Cyrillic, Arabic, etc.)
-grep -rnP '[^\x00-\x7F]' --exclude-dir=vendor --exclude-dir=.git .
+grep -rnP '[^\x00-\x7F]' --exclude-dir=vendor --exclude-dir=.git --exclude-dir=i18n .
 ```
 
 The secondary check also flags typographic characters (curly quotes, em dashes, `…`) that are
 legal in Markdown prose but should not appear inside code identifiers or source files.
 
 `vendor/` is excluded from both checks — it is a read-only mirror of third-party code and
-retains its original language.
+retains its original language. `web/src/i18n/` is excluded because it holds the translation
+catalogues; the `docs-english` gate makes the same exemption and no other directory carries
+one.
 
 If a document is ever found to contain non-English text, that document is a defect: fix it in
 the same change that introduced it.

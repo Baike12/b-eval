@@ -160,4 +160,21 @@ describe('RunReport', () => {
     await waitFor(() => expect(screen.getByText('Failure analysis')).toBeInTheDocument())
     expect(screen.getByText('T-1#0#1')).toBeInTheDocument()
   })
+
+  it('renders a run in which no trial failed', async () => {
+    const clean = { ...report, failures: { ...report.failures, failed_trials: [] } }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify(clean), { status: 200, headers: { 'Content-Type': 'application/json' } })),
+    )
+    render(
+      <MemoryRouter initialEntries={['/runs/run-1']}>
+        <Routes>
+          <Route path="/runs/:runID" element={<RunReport />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+    await waitFor(() => expect(screen.getByText('Failure analysis')).toBeInTheDocument())
+    expect(screen.getByText('No trial failed.')).toBeInTheDocument()
+  })
 })

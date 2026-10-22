@@ -8,7 +8,18 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION="$(date -u +%Y%m%d-%H%M)"
+# The target platform and the output path are overridable so that the same
+# script produces the local build and the cross-compiled build the
+# deployment ships.
+VERSION="${VERSION:-$(date -u +%Y%m%d-%H%M)}"
+GOOS="${GOOS:-$(go env GOOS)}"
+GOARCH="${GOARCH:-$(go env GOARCH)}"
+CGO_ENABLED="${CGO_ENABLED:-$(go env CGO_ENABLED)}"
+OUT="${OUT:-dist/b-eval}"
+# The base path is baked into the bundle, so the API paths and the asset
+# URLs it produces carry it. A deployment that serves the platform from a
+# prefix sets it; the default serves the platform from the root.
+export BASE_PATH="${BASE_PATH:-/}"
 
 echo ">>> [1/3] Build the frontend"
 (
@@ -27,7 +38,8 @@ mkdir -p internal/web/dist
 cp -R web/dist/. internal/web/dist/
 
 echo ">>> [3/3] Compile the backend"
-mkdir -p dist
-go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o dist/b-eval ./cmd/b-eval
-ls -l dist/b-eval
-echo "Build complete: version ${VERSION}"
+mkdir -p "$(dirname "${OUT}")"
+CGO_ENABLED="${CGO_ENABLED}" GOOS="${GOOS}" GOARCH="${GOARCH}" \
+  go build -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o "${OUT}" ./cmd/b-eval
+ls -l "${OUT}"
+echo "Build complete: version ${VERSION} (${GOOS}/${GOARCH})"

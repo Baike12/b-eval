@@ -6,33 +6,33 @@
 | **Status** | Draft |
 | **Owner** | Platform team |
 | **Priority** | P1 |
-| **Implements** | `Defines the functional requirement inventory (F-AGT-*, F-TSK-*, F-JDG-*, F-RUN-*, F-RPT-*, F-MTR-*, F-SEC-*, F-LDR-*, F-HUM-*, F-GOV-*) that every other feature declares in its Implements field.` |
+| **Implements** | `Defines the functional requirement inventory (F-AGT-*, F-TSK-*, F-JDG-*, F-RUN-*, F-RPT-*, F-MTR-*, F-SEC-*, F-LDR-*, F-HUM-*, F-GOV-*, F-EXP-*) that every other feature declares in its Implements field.` |
 | **Created** | 2026-10-22 |
 | **Last Updated** | 2026-10-22 |
 | **Source** | Functional design chapter 07 — User Flows and Feature Inventory |
 
 ## Summary
 
-This feature defines the end-to-end user journeys, the complete functional requirement inventory, the interface and interaction rules, and the role-based permission model of the evaluation platform. It covers the six user roles — Agent Developer, Task Author, Benchmark Maintainer, Evaluation Organizer, Reviewer and Platform Operator — from the registration of a system under test through task authoring, batch evaluation, adversarial evaluation and leaderboard publication. The single most important outcome is one unambiguous inventory of 69 functional requirements that every other feature document declares in its own `Implements` field.
+This feature defines the end-to-end user journeys, the complete functional requirement inventory, the interface and interaction rules, and the role-based permission model of the evaluation platform. It covers the six user roles — Agent Developer, Task Author, Benchmark Maintainer, Evaluation Organizer, Reviewer and Platform Operator — from the registration of a system under test through task authoring, batch evaluation, adversarial evaluation and leaderboard publication. The single most important outcome is one unambiguous inventory of 70 functional requirements that every other feature document declares in its own `Implements` field.
 
 ## Problem
 
 **Current behaviour:** The platform's modules are specified as isolated capabilities, while the behaviour that ties them together lives only in the user journeys: an integration that has not passed the access self-check would otherwise be recorded as weak capability (F-AGT-04), a report that does not lead with its confidence section misreads a platform failure as a capability failure, and a score could be re-judged by the very person who submitted it.
 
-**Pain:** Every role — Agent Developer, Task Author, Benchmark Maintainer, Evaluation Organizer, Reviewer and Platform Operator — acts through these paths, and each path only means something if the mandatory gates, the interface rules and the role separation hold. Without one shared inventory of the 69 functional requirements, every feature document would define its own boundary, and the confidence-first, explicit-exception and player/referee separation guarantees would be reinterpreted differently by each implementer.
+**Pain:** Every role — Agent Developer, Task Author, Benchmark Maintainer, Evaluation Organizer, Reviewer and Platform Operator — acts through these paths, and each path only means something if the mandatory gates, the interface rules and the role separation hold. Without one shared inventory of the 70 functional requirements, every feature document would define its own boundary, and the confidence-first, explicit-exception and player/referee separation guarantees would be reinterpreted differently by each implementer.
 
 **Evidence:** Not specified in the source design.
 
 ## Proposed Solution
 
-The platform delivers five end-to-end journeys — Agent Developer onboarding and self-test, routine regression, task authoring, batch evaluation and publication, and security-reviewer adversarial evaluation — that carry a user from the first action to a published result. Each journey is expressed as an ordered ASCII step diagram so that the sequence, the decision points and the blocking gates are unambiguous. Underneath the journeys, the 69-row functional requirement inventory fixes the module boundaries, and the interface/interaction layer plus the role-based permission matrix fixes what each screen shows and who may act on it. Every other feature document in this set points back at this inventory through its own `Implements` field.
+The platform delivers five end-to-end journeys — Agent Developer onboarding and self-test, routine regression, task authoring, batch evaluation and publication, and security-reviewer adversarial evaluation — that carry a user from the first action to a published result. Each journey is expressed as an ordered ASCII step diagram so that the sequence, the decision points and the blocking gates are unambiguous. Underneath the journeys, the 70-row functional requirement inventory fixes the module boundaries, and the interface/interaction layer plus the role-based permission matrix fixes what each screen shows and who may act on it. Every other feature document in this set points back at this inventory through its own `Implements` field.
 
 ## Scope
 
 ### In Scope
 
 - The five core user journeys and their step order, decision points and blocking gates (Agent Developer onboarding and self-test, routine regression, Task Author task creation, Evaluation Organizer batch evaluation and publication, Security Reviewer adversarial evaluation).
-- The functional requirement inventory of 69 requirements across ten modules: System Under Test Management, Tasks and Task Sets, Scorers, Evaluation Runs, Reporting and Analysis, Metrics, Security, Leaderboard and Collaboration, Human Review, and Platform Governance.
+- The functional requirement inventory of 70 requirements across eleven modules: System Under Test Management, Tasks and Task Sets, Scorers, Evaluation Runs, Reporting and Analysis, Metrics, Security, Leaderboard and Collaboration, Human Review, Platform Governance, and Interface and Experience.
 - The page inventory of 14 pages with their main content and primary users.
 - The interaction principles that constrain every report, breakdown, comparison and default override.
 - The key interaction flow details for cost estimate feedback, pause and cancel, failure retry, offline rescoring, and re-judgement.
@@ -195,6 +195,7 @@ The platform delivers five end-to-end journeys — Agent Developer onboarding an
   | | F-GOV-03 | Benchmark regression suite | Must run on every platform upgrade |
   | | F-GOV-04 | Audit log | Full traceability of task/judgement/submission changes |
   | | F-GOV-05 | Permissions and roles | Functional and data permissions of the six roles |
+  | **Interface and Experience** | F-EXP-01 | Interface language | The interface speaks the language the reader chose, Chinese by default, and the choice is remembered |
 
 - **R3** The platform must provide the pages listed in the page inventory below, each carrying the stated main content and serving the stated primary users.
 
@@ -268,7 +269,7 @@ The platform delivers five end-to-end journeys — Agent Developer onboarding an
 - [ ] **AC4** (R1) A leaderboard submission is recomputed by the platform and passed through anti-cheat verification before it is published or returned.
 - [ ] **AC5** (R2) A scorer change triggers the regression set, and a scorer version that does not pass it is blocked.
 - [ ] **AC6** (R2) The benchmark regression suite runs on every platform upgrade.
-- [ ] **AC7** (R2) Every one of the 69 functional requirement identifiers is present exactly as listed in the feature module inventory, with its module grouping, feature name and description.
+- [ ] **AC7** (R2) Every one of the 70 functional requirement identifiers is present exactly as listed in the feature module inventory, with its module grouping, feature name and description.
 - [ ] **AC8** (R3) Every page in the page inventory exists and presents its stated main content to its stated primary users.
 - [ ] **AC9** (R4) The confidence section (platform failure rate, judgement failure rate, effective sample size) is always at the top of the report page and can be neither collapsed nor hidden.
 - [ ] **AC10** (R4) Every "excluded", "NA" or "no coverage" value is visually distinguished from a normal value and can be expanded to show its reason.
@@ -305,8 +306,9 @@ Not specified in the source design.
 
 ## References
 
-- Tech Design: Not yet created.
-- Test Report: [TR-003 M0 Vertical Slice][tr-003].
+- Tech Design: [TD-006 Interface Visual Design System][td-006].
+- Test Report: [TR-003 M0 Vertical Slice][tr-003], [TR-005 Interface Visual Design System][tr-005], [TR-008 Unknown Address and Render Failure Handling][tr-008].
+- Fixes that changed what a reader is shown: [FIX-005 Unknown Address Rendered an Empty Document][fix-005].
 
 ## Open Questions
 
@@ -315,3 +317,7 @@ Not specified in the source design.
 | 1 | Not specified in the source design. | - | - |
 
 [tr-003]: <../../Test Report/TR-003-m0-vertical-slice.md>
+[td-006]: <../../Tech Design/TD-006-interface-visual-design-system.md>
+[tr-005]: <../../Test Report/TR-005-interface-visual-design-system.md>
+[tr-008]: <../../Test Report/TR-008-unknown-address-and-render-failure-handling.md>
+[fix-005]: <../../Fix/experience/unknown-address-rendered-an-empty-document.md>

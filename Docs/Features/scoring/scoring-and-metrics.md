@@ -480,9 +480,10 @@ The metric registry ships with the M0 runtime. The built-in set is registered at
 ## References
 
 - Tech Design: [TD-003 Metric Registry and Scoring Contract][td-003]
-- Test Report: [TR-003 M0 Vertical Slice][tr-003]
+- Test Report: [TR-003 M0 Vertical Slice][tr-003], [TR-006 Report Collection Contract][tr-006] (the shape of the registry the client reads).
 - Source: Functional design chapter 04 — Scoring and Metrics.
 - Sibling design chapter cited by this document: [FEAT-002 Capability Taxonomy and Task System][feat-002] (cited as 2.1.1, 2.1.2, 2.1.3, and 2.5 for the decomposition dimensions).
+- Fix that changed what the registry publishes: [FIX-003 Report Null Collection Blanks the Report Screen][fix-003].
 
 ## Open Questions
 
@@ -497,3 +498,5 @@ The metric registry ships with the M0 runtime. The built-in set is registered at
 [feat-002]: <../task-system/capability-taxonomy-and-task-system.md>
 [td-003]: <../../Tech Design/TD-003-metric-registry-and-scoring-contract.md>
 [tr-003]: <../../Test Report/TR-003-m0-vertical-slice.md>
+[tr-006]: <../../Test Report/TR-006-report-collection-contract.md>
+[fix-003]: <../../Fix/reporting/report-null-collection-blanks-the-report-screen.md>

@@ -7,7 +7,8 @@
 > here and are documented separately under [`Tech Design/`](<./Tech Design>).
 > Every place needing a technical decision is marked `[pending technical design]`.
 
-**Language policy:** all content in this repository is English. See [`../AGENTS.md`](../AGENTS.md) §1.
+**Language policy:** all content in this repository is English, with one exception: the translation catalogues of
+the interface under `web/src/i18n/`, which hold the product's own second language. See [`../AGENTS.md`](../AGENTS.md) §1.
 
 ## 1. Document Index
 
@@ -55,13 +56,19 @@ The delivery chain in full:
 | [FEAT-009 Unified Agent Adapter Protocol](./Features/agent-integration/unified-agent-adapter-protocol.md) | [TD-001 Unified Agent Adapter Protocol](<./Tech Design/TD-001-unified-agent-adapter-protocol.md>) | [TR-001 Unified Agent Adapter Protocol](<./Test Report/TR-001-unified-agent-adapter-protocol.md>) |
 | [FEAT-002 Capability Taxonomy and Task System](./Features/task-system/capability-taxonomy-and-task-system.md) | [TD-002 Task Forms and the Task Metadata Contract](<./Tech Design/TD-002-task-forms-and-metadata-contract.md>) | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
 | [FEAT-003 Evaluation Execution and Orchestration](./Features/execution/evaluation-execution-and-orchestration.md) | [TD-004 M0 Runtime and Quality Gate System](<./Tech Design/TD-004-m0-runtime-and-quality-gate-system.md>) | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
-| [FEAT-004 Scoring and Metrics](./Features/scoring/scoring-and-metrics.md) | [TD-003 Metric Registry and Scoring Contract](<./Tech Design/TD-003-metric-registry-and-scoring-contract.md>) | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
+| [FEAT-004 Scoring and Metrics](./Features/scoring/scoring-and-metrics.md) | [TD-003 Metric Registry and Scoring Contract](<./Tech Design/TD-003-metric-registry-and-scoring-contract.md>) | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>), [TR-006 Report Collection Contract](<./Test Report/TR-006-report-collection-contract.md>) |
+| [FEAT-005 Reporting, Analysis and Comparison](./Features/reporting/reporting-analysis-and-comparison.md) | — | [TR-006 Report Collection Contract](<./Test Report/TR-006-report-collection-contract.md>), [TR-007 Scale Mark Geometry](<./Test Report/TR-007-scale-mark-geometry.md>) |
 | [FEAT-007 User Flows and Feature Inventory](./Features/experience/user-flows-and-feature-inventory.md) | — | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
+| [FEAT-010 Interface Language Selection](./Features/experience/interface-language-selection.md) | [TD-007 Interface Language Selection](<./Tech Design/TD-007-interface-language-selection.md>) | [TR-010 Interface Language Selection](<./Test Report/TR-010-interface-language-selection.md>) |
 | [FEAT-008 Delivery Roadmap and Acceptance Criteria](./Features/platform/delivery-roadmap-and-acceptance-criteria.md) | [TD-004 M0 Runtime and Quality Gate System](<./Tech Design/TD-004-m0-runtime-and-quality-gate-system.md>) | [TR-003 M0 Vertical Slice](<./Test Report/TR-003-m0-vertical-slice.md>) |
 
 | Fix | Test Report |
 |---|---|
 | [FIX-002 Black-box CLI Empty Action Sequence Not Flagged](./Fix/agent-integration/blackbox-cli-empty-action-sequence-not-flagged.md) | [TR-002 Black-box CLI Empty Action Sequence Fix](<./Test Report/TR-002-blackbox-cli-empty-action-sequence-fix.md>) |
+| [FIX-003 Report Null Collection Blanks the Report Screen](./Fix/reporting/report-null-collection-blanks-the-report-screen.md) | [TR-006 Report Collection Contract](<./Test Report/TR-006-report-collection-contract.md>) |
+| [FIX-004 Scale Mark Overhung the Track at the Ends of the Scale](./Fix/reporting/scale-mark-overhung-the-track-at-the-ends-of-the-scale.md) | [TR-007 Scale Mark Geometry](<./Test Report/TR-007-scale-mark-geometry.md>) |
+| [FIX-005 Unknown Address Rendered an Empty Document](./Fix/experience/unknown-address-rendered-an-empty-document.md) | [TR-008 Unknown Address and Render Failure Handling](<./Test Report/TR-008-unknown-address-and-render-failure-handling.md>) |
+| [FIX-006 Error Response Published the Server File Path](./Fix/reporting/error-response-published-the-server-file-path.md) | [TR-009 Error Response of a Missing Record](<./Test Report/TR-009-error-response-of-a-missing-record.md>) |
 
 ### 1.4 Conventions
 

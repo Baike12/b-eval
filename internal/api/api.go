@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -88,6 +89,30 @@ func writeJSON(w http.ResponseWriter, status int, value any) {
 
 func writeError(w http.ResponseWriter, status int, err error) {
 	writeJSON(w, status, errorResponse{Error: err.Error()})
+}
+
+// writeRecordError answers a request for a record the store could not give.
+//
+// The store's error names the file, and the file's path is the deployment's
+// own layout rather than the reader's business, so the response states what
+// was looked for and the internal detail goes to the server's log.
+func writeRecordError(w http.ResponseWriter, err error, subject string) {
+	if errors.Is(err, store.ErrNotFound) {
+		writeError(w, http.StatusNotFound, fmt.Errorf("%s does not exist", subject))
+		return
+	}
+	log.Printf("reading %s: %v", subject, err)
+	writeError(w, http.StatusInternalServerError, fmt.Errorf("%s could not be read", subject))
+}
+
+// taskSetSubject names the task set a request asked for.
+func taskSetSubject(r *http.Request) string {
+	return fmt.Sprintf("task set %q version %q", r.PathValue("id"), r.PathValue("version"))
+}
+
+// runSubject names the run a request asked for.
+func runSubject(r *http.Request) string {
+	return fmt.Sprintf("run %q", r.PathValue("id"))
 }
 
 // withJSONErrors turns an unhandled panic into a JSON error rather than an
@@ -203,7 +228,7 @@ func violationsOf(errs []domain.ValidationError) []map[string]string {
 func (s *Server) handleGetTaskSet(w http.ResponseWriter, r *http.Request) {
 	ts, err := s.Store.TaskSet(r.PathValue("id"), r.PathValue("version"))
 	if err != nil {
-		writeError(w, http.StatusNotFound, err)
+		writeRecordError(w, err, taskSetSubject(r))
 		return
 	}
 	writeJSON(w, http.StatusOK, ts)
@@ -212,7 +237,7 @@ func (s *Server) handleGetTaskSet(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleAddTask(w http.ResponseWriter, r *http.Request) {
 	ts, err := s.Store.TaskSet(r.PathValue("id"), r.PathValue("version"))
 	if err != nil {
-		writeError(w, http.StatusNotFound, err)
+		writeRecordError(w, err, taskSetSubject(r))
 		return
 	}
 	var task domain.Task
@@ -501,7 +526,7 @@ func (s *Server) handleCreateRun(w http.ResponseWriter, r *http.Request) {
 
 	ts, err := s.Store.TaskSet(req.TaskSetID, req.TaskSetVersion)
 	if err != nil {
-		writeError(w, http.StatusNotFound, err)
+		writeRecordError(w, err, fmt.Sprintf("task set %q version %q", req.TaskSetID, req.TaskSetVersion))
 		return
 	}
 	impl, ok := s.Agents.Adapter(req.AgentID)
@@ -554,7 +579,7 @@ func (s *Server) handleCreateRun(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGetRun(w http.ResponseWriter, r *http.Request) {
 	run, err := s.Store.Run(r.PathValue("id"))
 	if err != nil {
-		writeError(w, http.StatusNotFound, err)
+		writeRecordError(w, err, runSubject(r))
 		return
 	}
 	writeJSON(w, http.StatusOK, run)
@@ -563,7 +588,7 @@ func (s *Server) handleGetRun(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGetReport(w http.ResponseWriter, r *http.Request) {
 	run, err := s.Store.Run(r.PathValue("id"))
 	if err != nil {
-		writeError(w, http.StatusNotFound, err)
+		writeRecordError(w, err, runSubject(r))
 		return
 	}
 	rep := s.buildReport(run)
@@ -573,7 +598,7 @@ func (s *Server) handleGetReport(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleGetTrial(w http.ResponseWriter, r *http.Request) {
 	run, err := s.Store.Run(r.PathValue("id"))
 	if err != nil {
-		writeError(w, http.StatusNotFound, err)
+		writeRecordError(w, err, runSubject(r))
 		return
 	}
 	trialID := r.PathValue("trialID")
@@ -595,12 +620,12 @@ func (s *Server) handleCompare(w http.ResponseWriter, r *http.Request) {
 	}
 	a, err := s.Store.Run(aID)
 	if err != nil {
-		writeError(w, http.StatusNotFound, err)
+		writeRecordError(w, err, fmt.Sprintf("run %q", aID))
 		return
 	}
 	b, err := s.Store.Run(bID)
 	if err != nil {
-		writeError(w, http.StatusNotFound, err)
+		writeRecordError(w, err, fmt.Sprintf("run %q", bID))
 		return
 	}
 	repA := s.buildReport(a)
