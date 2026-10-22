@@ -7,7 +7,7 @@
 > here and are documented separately under [`Tech Design/`](<./Tech Design>).
 > Every place needing a technical decision is marked `[pending technical design]`.
 
-**Language policy:** all content in this repository is English. See [`../Agent.md`](../Agent.md).
+**Language policy:** all content in this repository is English. See [`../AGENTS.md`](../AGENTS.md) §1.
 
 ## 1. Document Index
 

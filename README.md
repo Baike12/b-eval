@@ -7,22 +7,22 @@ Agent evaluation platform.
 | Stage | Content | Where |
 |---|---|---|
 | Functional design | What the system does (no implementation) | [`Docs/Features/`](./Docs/Features) |
-| Delivery documents | Features, fixes, technical design, test reports | [`Docs/Features/`](./Docs/Features), [`Docs/Tech Design/`](<./Docs/Tech Design>), [`Docs/Test Report/`](<./Docs/Test Report>), [`Docs/Fix/`](./Docs/Fix) |
+| Delivery documents | Features, fixes, technical design, test reports | [`Docs/Features/index.md`](./Docs/Features/index.md), [`Docs/Fix/index.md`](./Docs/Fix/index.md) |
 | Technical design | Architecture and implementation | In progress |
 | Implementation | Not started | — |
 
 ## Working Rules
 
-Read [`Agent.md`](./Agent.md) before contributing. It defines the English-only language policy, the document templates, the mandatory cross-references between feature, technical design and test report documents, and the identifier namespaces.
+Read [`AGENTS.md`](./AGENTS.md) before contributing. It is the single rules file for this
+repository: the English-only language policy, the code-comment rules, the document templates,
+the mandatory cross-references, the folder and index conventions, and the identifier namespaces.
 
-[`AGENTS.md`](./AGENTS.md) adds the repository-specific notes on version control.
 
 ## Directory Layout
 
 ```
 b-eval/
-├── Agent.md                 # Operating rules: language policy, templates, cross-references
-├── AGENTS.md                # Repository-specific working rules
+├── AGENTS.md                # The single operating-rules file: language, comments, docs, workflow
 ├── Docs/
 │   ├── README.md            # Index of all documentation
 │   ├── Feature-Template.md  # Template for Docs/Features/
