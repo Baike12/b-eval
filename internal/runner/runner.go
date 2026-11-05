@@ -103,11 +103,12 @@ type trialResult struct {
 func (r *Runner) runTrial(ctx context.Context, in Input, task domain.Task, trialIndex int, seed int64) trialResult {
 	trialID := fmt.Sprintf("%s#%d#%d", task.TaskID, trialIndex, seed)
 	traj := domain.Trajectory{
-		TrialID: trialID,
-		TaskID:  task.TaskID,
-		AgentID: in.AgentID,
-		Form:    task.Form,
-		Seed:    seed,
+		TrialID:    trialID,
+		TaskID:     task.TaskID,
+		TrialIndex: trialIndex,
+		AgentID:    in.AgentID,
+		Form:       task.Form,
+		Seed:       seed,
 	}
 	started := time.Now()
 
@@ -221,6 +222,11 @@ func (r *Runner) runTrial(ctx context.Context, in Input, task domain.Task, trial
 			Detail: err.Error(),
 		})
 	}
+	if traj.Usage.ElapsedMS == 0 {
+		// The platform measured the wall clock; an adapter that reports no
+		// duration must not make the latency metric read zero.
+		traj.Usage.ElapsedMS = time.Since(started).Milliseconds()
+	}
 	traj.Answer = answer
 
 	failure := domain.Classify(traj.Termination)
@@ -228,6 +234,7 @@ func (r *Runner) runTrial(ctx context.Context, in Input, task domain.Task, trial
 	if judgeErr != nil {
 		return r.finish(task, trialIndex, seed, traj, failure, judgeErr.Error(), domain.Verdict{})
 	}
+	absorbJudgeUsage(&traj.Usage, verdict.Scorers)
 	if failure != domain.ClassCompleted {
 		// A trial that did not complete is a failure of the agent, not of the
 		// judgement, so the verdict is forced to FAIL. An exception is the
@@ -246,6 +253,14 @@ func (r *Runner) runTrial(ctx context.Context, in Input, task domain.Task, trial
 
 // finish assembles the three records of a trial.
 func (r *Runner) finish(task domain.Task, trialIndex int, seed int64, traj domain.Trajectory, failure domain.FailureClass, errDetail string, verdict domain.Verdict) trialResult {
+	outcome := buildOutcome(task, trialIndex, seed, traj, failure, errDetail, verdict)
+	return trialResult{Outcome: outcome, Trajectory: traj, Verdict: outcome.Verdict}
+}
+
+// buildOutcome flattens a judged trajectory into the row the metric layer
+// consumes. It is shared by execution and by offline re-scoring so a
+// re-judged trial is folded into the statistics exactly like a fresh one.
+func buildOutcome(task domain.Task, trialIndex int, seed int64, traj domain.Trajectory, failure domain.FailureClass, errDetail string, verdict domain.Verdict) domain.TrialOutcome {
 	if verdict.TrialID == "" {
 		verdict.TrialID = traj.TrialID
 		verdict.TaskID = task.TaskID
@@ -283,7 +298,24 @@ func (r *Runner) finish(task domain.Task, trialIndex int, seed int64, traj domai
 	if errDetail != "" {
 		outcome.Verdict.Evidence = map[string]any{"error": errDetail}
 	}
-	return trialResult{Outcome: outcome, Trajectory: traj, Verdict: outcome.Verdict}
+	return outcome
+}
+
+// absorbJudgeUsage adds the judges' consumption to the trial's usage.
+//
+// The judge is a model call the platform pays for, so FEAT-004 §4.2.4 counts
+// it in the trial's cost. It is kept in separate fields so the report can
+// still state the agent's own consumption.
+func absorbJudgeUsage(usage *domain.Usage, results []domain.ScorerResult) {
+	for _, r := range results {
+		if r.Usage == nil {
+			continue
+		}
+		usage.JudgeInputTokens += r.Usage.InputTokens
+		usage.JudgeOutputTokens += r.Usage.OutputTokens
+		usage.JudgeCostUSD += r.Usage.CostUSD
+		usage.ModelCalls += r.Usage.ModelCalls
+	}
 }
 
 // inspectAction checks one action against the task's contract.

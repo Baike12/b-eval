@@ -37,6 +37,35 @@ go run ./cmd/b-eval serve -addr 127.0.0.1:8091 -data data
 
 The API is under `/api`; the browser interface is at the root.
 
+## Scoring
+
+A task names its scorers by type. The deterministic set is `exact`, `contains`, `regex`,
+`keyword_set`, `rubric`, `action_sequence` and `label_match`. The `model_rubric` scorer is the
+J5 model judge: it grades each rubric item with an independent model and maps `C`/`P`/`I` to
+1.0/0.5/0.0. A judging failure is UNSCORED, never FAIL.
+
+The judge is platform configuration, because a task that could set the endpoint could send
+every agent answer elsewhere:
+
+```bash
+export B_EVAL_JUDGE_ENDPOINT=https://gateway.internal/v1   # OpenAI-compatible
+export B_EVAL_JUDGE_MODEL=judge-model
+export B_EVAL_JUDGE_API_KEY=...                              # omitted for an internal gateway
+export B_EVAL_JUDGE_TIMEOUT_SECONDS=30
+```
+
+A completed run is re-judged from its stored trajectories, without calling the agent. The
+result is a new run that names its source; the original verdict stays readable:
+
+```bash
+curl -X POST http://127.0.0.1:8091/api/runs/<run-id>/rescore \
+  -H 'Content-Type: application/json' \
+  -d '{"reason": "the rubric changed after review", "task_set_version": "v2"}'
+
+# One row per trial, with the verdict, failure class, termination reason and usage.
+curl -OJ 'http://127.0.0.1:8091/api/runs/<run-id>/export?format=csv'
+```
+
 ## Deploying
 
 The platform runs as a container on the target host and is served under the `/eval/` prefix by
@@ -99,7 +128,7 @@ b-eval/
 ├── internal/
 │   ├── domain/              # The data model and the task-form contract
 │   ├── adapter/             # The four-capability agent protocol, the HTTP and mock adapters
-│   ├── scoring/             # The scorers and the three-state verdict
+│   ├── scoring/             # The scorers, the J5 model judge, and the three-state verdict
 │   ├── metrics/             # The metric registry, the built-in metrics, the intervals
 │   ├── runner/              # Plan execution, budgets, failure classification
 │   ├── report/              # The single-run report

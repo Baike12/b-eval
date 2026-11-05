@@ -251,17 +251,34 @@ type Observation struct {
 }
 
 // Usage is the resource consumption of a trial.
+//
+// The judge's consumption is kept separate from the agent's so a report can
+// answer "how much did scoring cost" without subtracting one run from the
+// other, while TotalTokens still reports the full cost the platform paid.
 type Usage struct {
-	InputTokens  int     `json:"input_tokens"`
-	OutputTokens int     `json:"output_tokens"`
-	ModelCalls   int     `json:"model_calls"`
-	ToolCalls    int     `json:"tool_calls"`
-	ElapsedMS    int64   `json:"elapsed_ms"`
-	CostUSD      float64 `json:"cost_usd"`
+	InputTokens       int     `json:"input_tokens"`
+	OutputTokens      int     `json:"output_tokens"`
+	JudgeInputTokens  int     `json:"judge_input_tokens,omitempty"`
+	JudgeOutputTokens int     `json:"judge_output_tokens,omitempty"`
+	ModelCalls        int     `json:"model_calls"`
+	ToolCalls         int     `json:"tool_calls"`
+	ElapsedMS         int64   `json:"elapsed_ms"`
+	CostUSD           float64 `json:"cost_usd"`
+	JudgeCostUSD      float64 `json:"judge_cost_usd,omitempty"`
 }
 
-// TotalTokens is the token count the cost metric uses.
-func (u Usage) TotalTokens() int { return u.InputTokens + u.OutputTokens }
+// TotalTokens is the token count the cost metric uses. It includes the
+// judge's tokens, because FEAT-004 §4.2.4 requires the full cost of a trial
+// to include its scoring overhead.
+func (u Usage) TotalTokens() int {
+	return u.InputTokens + u.OutputTokens + u.JudgeInputTokens + u.JudgeOutputTokens
+}
+
+// AgentTokens is the agent's own token consumption, without the judge.
+func (u Usage) AgentTokens() int { return u.InputTokens + u.OutputTokens }
+
+// JudgeTokens is the judge's token consumption.
+func (u Usage) JudgeTokens() int { return u.JudgeInputTokens + u.JudgeOutputTokens }
 
 // Violation is one protocol violation, counted separately from the task
 // outcome so an integration bug is never scored as weak capability.
@@ -285,6 +302,7 @@ type Step struct {
 type Trajectory struct {
 	TrialID           string            `json:"trial_id"`
 	TaskID            string            `json:"task_id"`
+	TrialIndex        int               `json:"trial_index"`
 	AgentID           string            `json:"agent_id"`
 	Form              TaskForm          `json:"form"`
 	Seed              int64             `json:"seed"`
@@ -318,6 +336,10 @@ type ScorerResult struct {
 	Score    float64        `json:"score"`
 	Detail   string         `json:"detail,omitempty"`
 	Evidence map[string]any `json:"evidence,omitempty"`
+	// Usage is what the scorer itself consumed. A model judge reports its
+	// tokens here so the trial's cost accounting includes the scoring
+	// overhead; a deterministic scorer leaves it nil.
+	Usage *Usage `json:"usage,omitempty"`
 }
 
 // Verdict is the combined judgement of a trial.
@@ -386,15 +408,22 @@ func (p Plan) Fingerprint() string {
 
 // Run is one execution of a plan.
 type Run struct {
-	RunID        string         `json:"run_id"`
-	Plan         Plan           `json:"plan"`
-	Status       string         `json:"status"`
-	StartedAt    string         `json:"started_at"`
-	FinishedAt   string         `json:"finished_at,omitempty"`
-	Error        string         `json:"error,omitempty"`
-	Trials       []TrialOutcome `json:"trials"`
-	Trajectories []Trajectory   `json:"trajectories"`
-	Verdicts     []Verdict      `json:"verdicts"`
+	RunID      string `json:"run_id"`
+	Plan       Plan   `json:"plan"`
+	Status     string `json:"status"`
+	StartedAt  string `json:"started_at"`
+	FinishedAt string `json:"finished_at,omitempty"`
+	Error      string `json:"error,omitempty"`
+	// RescoredFrom names the run whose trajectories this run re-judged. An
+	// empty value means the run executed the agent itself.
+	RescoredFrom string `json:"rescored_from,omitempty"`
+	// RescoreReason is the operator's stated reason for re-judging. It is
+	// required for a re-scored run, because a verdict that changes without a
+	// recorded reason is not auditable.
+	RescoreReason string         `json:"rescore_reason,omitempty"`
+	Trials        []TrialOutcome `json:"trials"`
+	Trajectories  []Trajectory   `json:"trajectories"`
+	Verdicts      []Verdict      `json:"verdicts"`
 }
 
 // Agent is a registered system under test.

@@ -2,6 +2,8 @@ package metrics
 
 import (
 	"math"
+	"strings"
+	"unicode"
 
 	"github.com/Baike12/b-eval/internal/domain"
 )
@@ -262,6 +264,64 @@ func builtinMetrics() []MetricDef {
 			CIMethod:           "wilson",
 			Version:            "1",
 			Compute:            computeGroundingAccuracy,
+		},
+		{
+			ID:                 "avg_latency_ms",
+			Name:               "Average latency",
+			Description:        "Mean wall-clock duration of a valid trial, in milliseconds.",
+			Builtin:            true,
+			Unit:               UnitScore,
+			Aggregations:       []string{AggMicro},
+			DefaultAggregation: AggMicro,
+			Numerator:          "Sum of trial durations",
+			Denominator:        "Valid trials",
+			Formula:            "sum(elapsed_ms) / count(valid trials)",
+			Version:            "1",
+			Compute:            computeAvgLatencyMS,
+		},
+		{
+			ID:                 "avg_judge_tokens_per_trial",
+			Name:               "Average judge tokens per trial",
+			Description:        "Mean token consumption of the scoring step over the valid trials.",
+			Builtin:            true,
+			Unit:               UnitScore,
+			Aggregations:       []string{AggMicro},
+			DefaultAggregation: AggMicro,
+			Numerator:          "Sum of judge input and output tokens",
+			Denominator:        "Valid trials",
+			Formula:            "sum(judge input tokens + judge output tokens) / count(valid trials)",
+			Version:            "1",
+			Compute:            computeAvgJudgeTokens,
+		},
+		{
+			ID:                 "answer_consistency",
+			Name:               "Answer consistency",
+			Description:        "Mean pairwise similarity of the answers a task received across its valid trials.",
+			Builtin:            true,
+			Unit:               UnitRatio,
+			Aggregations:       []string{AggMacro},
+			DefaultAggregation: AggMacro,
+			Numerator:          "Sum of per-task mean pairwise similarities",
+			Denominator:        "Tasks with at least two valid trials",
+			Formula:            "mean over tasks of the mean Jaccard similarity over the token sets of every trial pair",
+			CIMethod:           "normal",
+			Version:            "1",
+			Compute:            computeAnswerConsistency,
+		},
+		{
+			ID:                 "classification_accuracy",
+			Name:               "Classification accuracy",
+			Description:        "Share of labelled trials whose predicted label equals the expected label.",
+			Builtin:            true,
+			Unit:               UnitRatio,
+			Aggregations:       []string{AggMicro},
+			DefaultAggregation: AggMicro,
+			Numerator:          "Labelled trials whose predicted label equals the expected label",
+			Denominator:        "Trials carrying both an expected and a predicted label",
+			Formula:            "count(predicted == expected) / count(labelled trials)",
+			CIMethod:           "wilson",
+			Version:            "1",
+			Compute:            computeClassificationAccuracy,
 		},
 	}
 }
@@ -580,5 +640,172 @@ func computeGroundingAccuracy(in MetricInput) (MetricValue, error) {
 		Denominator: float64(actions),
 		SampleSize:  actions,
 		CI:          ciProportion(in.CIMethod, float64(accepted), float64(actions)),
+	}, nil
+}
+
+func computeAvgLatencyMS(in MetricInput) (MetricValue, error) {
+	var total int64
+	trials := 0
+	for _, t := range in.Trials {
+		if !t.Failure.CountsInDenominator() {
+			continue
+		}
+		total += t.Usage.ElapsedMS
+		trials++
+	}
+	if trials == 0 {
+		return MetricValue{HasValue: false}, nil
+	}
+	return MetricValue{
+		Value:       float64(total) / float64(trials),
+		HasValue:    true,
+		Numerator:   float64(total),
+		Denominator: float64(trials),
+		SampleSize:  trials,
+	}, nil
+}
+
+func computeAvgJudgeTokens(in MetricInput) (MetricValue, error) {
+	judgeTokens, trials := 0, 0
+	for _, t := range in.Trials {
+		if !t.Failure.CountsInDenominator() {
+			continue
+		}
+		judgeTokens += t.Usage.JudgeTokens()
+		trials++
+	}
+	if trials == 0 {
+		return MetricValue{HasValue: false}, nil
+	}
+	return MetricValue{
+		Value:       float64(judgeTokens) / float64(trials),
+		HasValue:    true,
+		Numerator:   float64(judgeTokens),
+		Denominator: float64(trials),
+		SampleSize:  trials,
+	}, nil
+}
+
+// computeAnswerConsistency measures whether the agent answers the same task
+// the same way across repetitions.
+//
+// The metric is task-equal-weighted: a task with many repetitions does not
+// dominate a task with two. A task with fewer than two valid trials has no
+// consistency value and is excluded from the average, not counted as perfect
+// or as zero.
+func computeAnswerConsistency(in MetricInput) (MetricValue, error) {
+	byTask := map[string][]string{}
+	var order []string
+	for _, t := range in.Trials {
+		if !t.Failure.CountsInDenominator() {
+			continue
+		}
+		if _, ok := byTask[t.TaskID]; !ok {
+			order = append(order, t.TaskID)
+		}
+		answer, _ := evidenceLookup(t, "answer")
+		byTask[t.TaskID] = append(byTask[t.TaskID], answer)
+	}
+
+	values := make([]float64, 0, len(order))
+	for _, taskID := range order {
+		answers := byTask[taskID]
+		if len(answers) < 2 {
+			continue
+		}
+		values = append(values, meanPairwiseSimilarity(answers))
+	}
+	if len(values) == 0 {
+		return MetricValue{HasValue: false}, nil
+	}
+	sum := 0.0
+	for _, v := range values {
+		sum += v
+	}
+	return MetricValue{
+		Value:       sum / float64(len(values)),
+		HasValue:    true,
+		Numerator:   sum,
+		Denominator: float64(len(values)),
+		SampleSize:  len(values),
+		CI:          ciValues(in.CIMethod, values),
+	}, nil
+}
+
+// meanPairwiseSimilarity averages the Jaccard similarity of every answer
+// pair. The token sets make the measure insensitive to word order and to
+// repeated words.
+func meanPairwiseSimilarity(answers []string) float64 {
+	tokens := make([]map[string]bool, len(answers))
+	for i, answer := range answers {
+		tokens[i] = tokenSet(answer)
+	}
+	sum, pairs := 0.0, 0
+	for i := 0; i < len(tokens); i++ {
+		for j := i + 1; j < len(tokens); j++ {
+			sum += jaccard(tokens[i], tokens[j])
+			pairs++
+		}
+	}
+	if pairs == 0 {
+		return 0
+	}
+	return sum / float64(pairs)
+}
+
+// tokenSet splits text into a set of lower-cased letter and digit runs.
+func tokenSet(text string) map[string]bool {
+	out := map[string]bool{}
+	for _, word := range strings.FieldsFunc(strings.ToLower(text), func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	}) {
+		out[word] = true
+	}
+	return out
+}
+
+func jaccard(a, b map[string]bool) float64 {
+	if len(a) == 0 && len(b) == 0 {
+		return 1
+	}
+	intersection := 0
+	for token := range a {
+		if b[token] {
+			intersection++
+		}
+	}
+	union := len(a) + len(b) - intersection
+	if union == 0 {
+		return 1
+	}
+	return float64(intersection) / float64(union)
+}
+
+func computeClassificationAccuracy(in MetricInput) (MetricValue, error) {
+	correct, labelled := 0, 0
+	for _, t := range in.Trials {
+		if !t.Failure.CountsInDenominator() {
+			continue
+		}
+		expected, okExpected := evidenceLookup(t, "expected_label")
+		predicted, okPredicted := evidenceLookup(t, "predicted_label")
+		if !okExpected || !okPredicted {
+			continue
+		}
+		labelled++
+		if normalizeLabel(expected) == normalizeLabel(predicted) {
+			correct++
+		}
+	}
+	if labelled == 0 {
+		return MetricValue{HasValue: false}, nil
+	}
+	return MetricValue{
+		Value:       float64(correct) / float64(labelled),
+		HasValue:    true,
+		Numerator:   float64(correct),
+		Denominator: float64(labelled),
+		SampleSize:  labelled,
+		CI:          ciProportion(in.CIMethod, float64(correct), float64(labelled)),
 	}, nil
 }

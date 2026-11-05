@@ -164,7 +164,7 @@ func Compose(task domain.Task, results []domain.ScorerResult) domain.Verdict {
 	return v
 }
 
-// builtinScorers returns the scorers the platform ships in M0.
+// builtinScorers returns the scorers the platform ships.
 func builtinScorers() []Scorer {
 	return []Scorer{
 		&ExactMatchScorer{},
@@ -173,6 +173,8 @@ func builtinScorers() []Scorer {
 		&KeywordSetScorer{},
 		&RubricScorer{},
 		&ActionSequenceScorer{},
+		&LabelMatchScorer{},
+		&ModelJudgeScorer{},
 	}
 }
 
@@ -388,6 +390,61 @@ func parseRubricItems(raw any) []RubricItem {
 		}
 	}
 	return items
+}
+
+// LabelMatchScorer compares the label the agent produced with the task's
+// expected label. It is the deterministic J4 scorer used by classification
+// tasks; the classification metrics read its evidence.
+type LabelMatchScorer struct{}
+
+// Type identifies the scorer.
+func (s *LabelMatchScorer) Type() string { return "label_match" }
+
+// Judge extracts the predicted label and compares it with the expected one.
+//
+// The expected label may be declared on the scorer or, more commonly, be the
+// task's reference answer. An answer that names none of the declared labels
+// is taken as its own label, so an out-of-vocabulary answer is a wrong
+// prediction rather than an unscored one.
+func (s *LabelMatchScorer) Judge(task domain.Task, spec domain.ScorerSpec, traj domain.Trajectory) (domain.ScorerResult, error) {
+	expected := stringParam(spec.Params, "expected_label")
+	if expected == "" {
+		expected = task.Judgement.ReferenceAnswer
+	}
+	if strings.TrimSpace(expected) == "" {
+		return domain.ScorerResult{Value: domain.VerdictUnscored, Detail: "the task declares no expected label"}, nil
+	}
+	predicted := answerLabel(traj.Answer, stringList(spec.Params, "labels"))
+	pass := normalizeLabel(predicted) == normalizeLabel(expected)
+	return domain.ScorerResult{
+		Value:  verdictOf(pass),
+		Score:  scoreOf(pass),
+		Detail: fmt.Sprintf("expected label %q, predicted %q", expected, predicted),
+		Evidence: map[string]any{
+			"expected_label":  expected,
+			"predicted_label": predicted,
+			"is_correct":      pass,
+		},
+	}, nil
+}
+
+// answerLabel returns the first declared label the answer contains, or the
+// trimmed answer when it contains none.
+func answerLabel(answer string, labels []string) string {
+	lower := strings.ToLower(answer)
+	for _, label := range labels {
+		trimmed := strings.TrimSpace(label)
+		if trimmed != "" && strings.Contains(lower, strings.ToLower(trimmed)) {
+			return trimmed
+		}
+	}
+	return strings.TrimSpace(answer)
+}
+
+// normalizeLabel makes the comparison insensitive to case, surrounding
+// whitespace and repeated internal whitespace.
+func normalizeLabel(label string) string {
+	return strings.Join(strings.Fields(strings.ToLower(strings.TrimSpace(label))), " ")
 }
 
 // stringList reads a string list parameter out of a scorer's params.

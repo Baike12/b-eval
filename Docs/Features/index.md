@@ -47,12 +47,14 @@ document reaches its design and its verification.
 | ID | Feature | Summary |
 |---|---|---|
 | [FEAT-003](execution/evaluation-execution-and-orchestration.md) | Evaluation Execution and Orchestration | The end-to-end run flow, the interaction contract, the six budget classes, concurrency and rate limiting, the six failure classes, resume semantics, and the trial record. |
+| [FEAT-012](execution/offline-rescoring.md) | Offline Re-scoring | Re-judging a completed run from its persisted trajectories, against an optional corrected task-set version, as a new auditable run. |
 
 ## Scoring
 
 | ID | Feature | Summary |
 |---|---|---|
 | [FEAT-004](scoring/scoring-and-metrics.md) | Scoring and Metrics | Six scorer categories behind one three-state verdict contract, the metric registry with its locked built-in set and its custom registrations, decomposition and aggregation conventions, and the worked example that pins the semantics. |
+| [FEAT-011](scoring/model-judge-scoring.md) | Model Judge Scoring | The J5 model scorer: weighted rubric items, a platform-configured judge at temperature 0, delimiter-escaped untrusted text, partial credit, UNSCORED on every judging failure, and full judge-cost accounting. |
 
 ## Reporting
 

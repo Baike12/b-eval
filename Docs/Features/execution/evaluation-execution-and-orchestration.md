@@ -8,7 +8,7 @@
 | **Priority** | P0 |
 | **Implements** | `F-RUN-01`, `F-RUN-02`, `F-RUN-03`, `F-RUN-04`, `F-RUN-05`, `F-RUN-06`, `F-RUN-07`, `F-RUN-08`, `F-AGT-01`, `F-AGT-02`, `F-AGT-03`, `F-AGT-04` |
 | **Created** | 2026-10-22 |
-| **Last Updated** | 2026-10-22 |
+| **Last Updated** | 2026-11-05 |
 | **Source** | Functional design chapter 03 — Evaluation Execution and Orchestration |
 
 ## Summary
@@ -241,6 +241,8 @@ The platform provides a unified evaluation execution and orchestration layer. Ev
     - **The configuration must be identical when resuming**: if the task set version, Agent version, scoring configuration or budget changes in any respect, the platform refuses to resume and reports "this is a new evaluation". The decision is based on the plan fingerprint.
     - **A completed judgement can be re-run on its own** (without changing the trajectory) in order to switch the scoring criteria; the re-run result is recorded as a new judgement version, and the historical judgement is retained for comparison.
 
+    The executable form of this rule is specified in [FEAT-012 Offline Re-scoring][feat-012]: a completed run is re-judged from its trajectories against an optional task-set version, the result is a new run that names its source, and a reason is mandatory.
+
 - **R13** Each Trial must record the trajectory categories below, and the trajectory must support offline re-scoring, trajectory comparison and export.
 
   **3.8 Trajectory and Observability Records**
@@ -341,9 +343,10 @@ Not specified in the source design.
 
 ## References
 
-- Tech Design: [TD-004 M0 Runtime and Quality Gate System][td-004]
-- Test Report: [TR-003 M0 Vertical Slice][tr-003]
+- Tech Design: [TD-004 M0 Runtime and Quality Gate System][td-004], [TD-009 Offline Re-scoring][td-009]
+- Test Report: [TR-003 M0 Vertical Slice][tr-003], [TR-012 Offline Re-scoring][tr-012]
 - Functional design chapter 02 — Capability Taxonomy and Task System: [FEAT-002][feat-002]
+- Offline re-scoring: [FEAT-012 Offline Re-scoring][feat-012]
 - Source of this document: Functional design chapter 03 — Evaluation Execution and Orchestration (this document).
 
 ## Open Questions
@@ -356,5 +359,8 @@ Not specified in the source design.
      because the referenced paths may contain spaces. -->
 
 [feat-002]: <../task-system/capability-taxonomy-and-task-system.md>
+[feat-012]: <./offline-rescoring.md>
 [td-004]: <../../Tech Design/TD-004-m0-runtime-and-quality-gate-system.md>
+[td-009]: <../../Tech Design/TD-009-offline-rescoring.md>
 [tr-003]: <../../Test Report/TR-003-m0-vertical-slice.md>
+[tr-012]: <../../Test Report/TR-012-offline-rescoring.md>

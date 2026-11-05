@@ -7,7 +7,7 @@
 | **Implements** | [FEAT-004 Scoring and Metrics](../Features/scoring/scoring-and-metrics.md) |
 | **Owner** | Platform team |
 | **Created** | 2026-10-22 |
-| **Last Updated** | 2026-10-22 |
+| **Last Updated** | 2026-11-05 |
 
 > This document specifies *how* the metric registry and the scoring contract are built. The *what* and *why* live in the Feature document it implements.
 
@@ -95,6 +95,10 @@ The built-in entries are registered through the exact same `Register` path. Ther
 | `invalid_action_rate` | ratio | micro | malformed actions / total responses |
 | `repeated_action_rate` | ratio | micro | consecutive equivalent actions / total actions |
 | `grounding_accuracy` | ratio | micro | accepted actions / total actions |
+| `avg_latency_ms` | score | micro | mean trial duration in milliseconds |
+| `avg_judge_tokens_per_trial` | score | micro | judge tokens / valid trials |
+| `answer_consistency` | ratio | macro | mean over tasks of the mean pairwise Jaccard similarity of answers |
+| `classification_accuracy` | ratio | micro | correct labels / labelled trials |
 
 `success_rate` is the primary metric: it is the one the leaderboard and the total score are built from.
 
@@ -195,7 +199,7 @@ Scorer categories:
 | Model scoring | `J5` | A rubric item judged by a model |
 | Human review | `J6` | A rubric item judged by a person |
 
-M0 implements `J2`, `J3`, `J4` and `J5` with a rule-based judge for `J5`. `J1` needs a live environment and `J6` needs a human queue; both are declared in the registry of scorer types but are not executable in M0, and the platform refuses to report a metric that depends on them rather than reporting a wrong number.
+M0 implemented `J2`, `J3`, `J4` and a rule-based stand-in for `J5`. The executable `J5` implementation is [TD-008 Model Judge Scoring][td-008]: a task declares a rubric, an independent OpenAI-compatible model grades each item at temperature 0, and a judging failure is UNSCORED. The remaining categories stay as declared: `J1` needs a live environment and `J6` needs a human queue; the platform refuses to report a metric that depends on them rather than reporting a wrong number.
 
 ## 12. Verdict Composition
 
@@ -232,7 +236,7 @@ A report consumer can therefore recompute the number from the exported audit pac
 
 ## 15. Verification
 
-Verified by [TR-003 M0 Vertical Slice][tr-003].
+Verified by [TR-003 M0 Vertical Slice][tr-003] and [TR-011 Model Judge Scoring][tr-011].
 
 ## 16. Open Points
 
@@ -242,7 +246,10 @@ Verified by [TR-003 M0 Vertical Slice][tr-003].
 ## References
 
 - Feature: [FEAT-004 Scoring and Metrics][feat-004]
-- Test Report: [TR-003 M0 Vertical Slice][tr-003]
+- Test Report: [TR-003 M0 Vertical Slice][tr-003], [TR-011 Model Judge Scoring][tr-011]
+- Related design: [TD-008 Model Judge Scoring][td-008]
 
 [feat-004]: <../Features/scoring/scoring-and-metrics.md>
+[td-008]: <./TD-008-model-judge-scoring.md>
 [tr-003]: <../Test Report/TR-003-m0-vertical-slice.md>
+[tr-011]: <../Test Report/TR-011-model-judge-scoring.md>

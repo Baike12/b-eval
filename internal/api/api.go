@@ -67,6 +67,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("POST /api/runs", s.handleCreateRun)
 	mux.HandleFunc("GET /api/runs/{id}", s.handleGetRun)
 	mux.HandleFunc("GET /api/runs/{id}/report", s.handleGetReport)
+	mux.HandleFunc("GET /api/runs/{id}/export", s.handleExportRun)
+	mux.HandleFunc("POST /api/runs/{id}/rescore", s.handleRescoreRun)
 	mux.HandleFunc("GET /api/runs/{id}/trials/{trialID}", s.handleGetTrial)
 	mux.HandleFunc("GET /api/compare", s.handleCompare)
 
@@ -609,6 +611,141 @@ func (s *Server) handleGetTrial(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	writeError(w, http.StatusNotFound, fmt.Errorf("trial %q is not in run %q", trialID, run.RunID))
+}
+
+// handleExportRun returns the trial rows of a run.
+//
+// The CSV form is the drill-down artefact; the JSON form is the complete run
+// record, including the trajectories. Both are the same data the report and
+// the trial endpoint serve, in a form a third party can keep.
+func (s *Server) handleExportRun(w http.ResponseWriter, r *http.Request) {
+	run, err := s.Store.Run(r.PathValue("id"))
+	if err != nil {
+		writeRecordError(w, err, runSubject(r))
+		return
+	}
+	switch r.URL.Query().Get("format") {
+	case "", "csv":
+		data, err := report.TrialsCSV(run)
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, fmt.Errorf("the run could not be exported: %w", err))
+			return
+		}
+		w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", run.RunID+".csv"))
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(data)
+	case "json":
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", run.RunID+".json"))
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(run)
+	default:
+		writeError(w, http.StatusBadRequest, fmt.Errorf("format %q is not supported; use %q or %q", r.URL.Query().Get("format"), "csv", "json"))
+	}
+}
+
+// rescoreRequest is the body of a re-judgement.
+//
+// A re-judgement against a different task set version is the supported way to
+// apply a corrected scorer: the trajectories are the agent's behaviour, and
+// the task set version carries the criteria that judge it.
+type rescoreRequest struct {
+	Reason         string `json:"reason"`
+	TaskSetID      string `json:"task_set_id"`
+	TaskSetVersion string `json:"task_set_version"`
+}
+
+// handleRescoreRun re-judges a completed run's trajectories.
+//
+// The source run is never modified: the result is a new run that names it in
+// RescoredFrom, so the previous verdict stays readable and the change is
+// auditable.
+func (s *Server) handleRescoreRun(w http.ResponseWriter, r *http.Request) {
+	var req rescoreRequest
+	if err := decodeJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
+	if strings.TrimSpace(req.Reason) == "" {
+		writeError(w, http.StatusBadRequest, errors.New("a reason is required for a re-judgement"))
+		return
+	}
+	if (req.TaskSetID == "") != (req.TaskSetVersion == "") {
+		writeError(w, http.StatusBadRequest, errors.New("task_set_id and task_set_version must be given together"))
+		return
+	}
+
+	source, err := s.Store.Run(r.PathValue("id"))
+	if err != nil {
+		writeRecordError(w, err, runSubject(r))
+		return
+	}
+	if source.Status != "completed" {
+		writeError(w, http.StatusConflict, fmt.Errorf("run %q is %q and cannot be re-judged", source.RunID, source.Status))
+		return
+	}
+	taskSetID := source.Plan.TaskSetID
+	if req.TaskSetID != "" {
+		taskSetID = req.TaskSetID
+	}
+	taskSetVersion := source.Plan.TaskSetVersion
+	if req.TaskSetVersion != "" {
+		taskSetVersion = req.TaskSetVersion
+	}
+	ts, err := s.Store.TaskSet(taskSetID, taskSetVersion)
+	if err != nil {
+		writeRecordError(w, err, fmt.Sprintf("task set %q version %q", taskSetID, taskSetVersion))
+		return
+	}
+
+	outcomes, verdicts, err := runner.Rejudge(ts, source.Plan.AgentID, source.Trajectories, s.Scorers)
+	if err != nil {
+		writeError(w, http.StatusUnprocessableEntity, fmt.Errorf("the run could not be re-judged: %w", err))
+		return
+	}
+
+	now := domain.Now()
+	rescored := source
+	runID, err := s.uniqueRunID(fmt.Sprintf("%s-rejudge-%s", source.RunID, time.Now().UTC().Format("20060102T150405")))
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	rescored.RunID = runID
+	rescored.Status = "completed"
+	rescored.StartedAt = now
+	rescored.FinishedAt = now
+	rescored.RescoredFrom = source.RunID
+	rescored.RescoreReason = req.Reason
+	rescored.Plan.TaskSetID = ts.TaskSetID
+	rescored.Plan.TaskSetVersion = ts.Version
+	rescored.Trials = outcomes
+	rescored.Verdicts = verdicts
+	if err := s.Store.SaveRun(rescored); err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, rescored)
+}
+
+// uniqueRunID returns base, or base with a numeric suffix when the record
+// already exists. Re-judging twice in the same second must not overwrite the
+// first judgement. A store read error other than "not found" is returned
+// rather than retried, so an I/O failure cannot become an infinite loop.
+func (s *Server) uniqueRunID(base string) (string, error) {
+	id := base
+	for suffix := 2; suffix <= 1000; suffix++ {
+		_, err := s.Store.Run(id)
+		if errors.Is(err, store.ErrNotFound) {
+			return id, nil
+		}
+		if err != nil {
+			return "", err
+		}
+		id = fmt.Sprintf("%s-%d", base, suffix)
+	}
+	return "", fmt.Errorf("could not allocate a run identifier based on %q", base)
 }
 
 func (s *Server) handleCompare(w http.ResponseWriter, r *http.Request) {

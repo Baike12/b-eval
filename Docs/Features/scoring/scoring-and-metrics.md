@@ -8,7 +8,7 @@
 | **Priority** | P0 |
 | **Implements** | `F-JDG-01`, `F-JDG-02`, `F-JDG-03`, `F-JDG-04`, `F-JDG-05`, `F-JDG-06`, `F-JDG-07`, `F-MTR-01`, `F-MTR-02`, `F-MTR-03`, `F-MTR-04`, `F-MTR-05`, `F-MTR-06`, `F-MTR-07` |
 | **Created** | 2026-10-22 |
-| **Last Updated** | 2026-10-22 |
+| **Last Updated** | 2026-11-05 |
 | **Source** | Functional design chapter 04 — Scoring and Metrics |
 
 ## Summary
@@ -65,7 +65,7 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
     | **Result retrieval** | J2 | Whether the artifact content (file, database rows, page state) matches expectations | Retrieve the artifact, then apply comparison rules | The getter layer of OSWorld |
     | **Action assertion** | J3 | Whether the Agent invoked the required action sequence and whether the parameters are correct | Match action names and parameters one by one | The ACTION criteria of τ²-bench |
     | **Rule criteria** | J4 | A declarative rule set (numeric comparison, regex, set relations, structured comparison) | Rule declaration + generic executor | OSWorld's `_match_value_to_rule`, test parsing in terminal-bench |
-    | **Model scoring** | J5 | Judge trajectory quality using natural-language rubric items | Rubric items + judging model | LLM judgement in VitaBench and TheAgentCompany |
+    | **Model scoring** | J5 | Judge trajectory quality using natural-language rubric items | Rubric items + judging model, temperature 0, fixed output contract ([FEAT-011][feat-011]) | LLM judgement in VitaBench and TheAgentCompany |
     | **Human review** | J6 | A human gives a verdict on the trajectory/artifact | Annotation workbench | Expert review in AgentBoard, human preference in Chatbot Arena |
 
 - **R2** Every scorer shall return exactly one of the three unified result states, and UNSCORED shall be a first-class state that is never equated with a failed judgement.
@@ -269,6 +269,15 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
     - **Variance across repeated runs**: `std` and `stderr`, used to judge whether "A is 1 point higher than B" is merely noise.
     - **Judge consistency**: when multiple judging models vote, report the agreement rate and a consistency coefficient (e.g. Krippendorff's alpha); task sets below the threshold are marked as "unreliable scoring".
 
+    **Answer consistency and the evaluation-profile metrics.** Four further built-in entries share the same registry rules and denominators:
+
+    | Metric | Definition | Aggregation |
+    |---|---|---|
+    | `answer_consistency` | Mean over tasks with at least two valid trials of the mean pairwise Jaccard similarity of their answers. A task with fewer than two valid trials has no consistency value. | macro, normal interval |
+    | `avg_latency_ms` | Mean `elapsed_ms` over the valid trials. | micro |
+    | `avg_judge_tokens_per_trial` | Judge input plus output tokens over the valid trials. | micro |
+    | `classification_accuracy` | Labelled trials whose predicted label equals the expected label, over the trials carrying both labels. | micro, Wilson interval |
+
 - **R14** The same score shall be decomposable along the defined dimensions, and every decomposition cell shall report sample size, success rate, continuous mean score, and confidence interval.
 
     #### 4.3 Decomposition and Aggregation Conventions
@@ -329,6 +338,8 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
     | **Judging failure = UNSCORED** | A judging model error, timeout, or unparseable output is always UNSCORED, never FAIL, and must not be retried beyond the permitted number of attempts |
     | **Judging quality must be calibrated** | Before deployment, a judging model must be evaluated for agreement rate on a human-annotated set; below the threshold it must not be used for formal evaluation |
 
+    The executable form of these rules is specified in [FEAT-011 Model Judge Scoring][feat-011]: the judge endpoint and credential are platform configuration, the temperature is fixed at 0, every untrusted text is delimiter-escaped, only the final grade per item is accepted, and a judging failure is UNSCORED with at most two attempts.
+
 - **R18** The platform shall provide a human review workbench with an append-only revision trail, mandatory and random review sampling rules, and a feedback path from reviews into judge calibration.
 
     #### 4.5 Human Review
@@ -377,7 +388,7 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
 
     The built-in set is:
 
-    `success_rate` · `pass_at_k` · `pass_power_k` · `avg_at_k` · `task_pass_rate` · `progress_score` · `platform_failure_rate` · `judgement_failure_rate` · `avg_steps_per_success` · `avg_tokens_per_success` · `avg_cost_per_success` · `invalid_action_rate` · `repeated_action_rate` · `grounding_accuracy`
+    `success_rate` · `pass_at_k` · `pass_power_k` · `avg_at_k` · `task_pass_rate` · `progress_score` · `platform_failure_rate` · `judgement_failure_rate` · `avg_steps_per_success` · `avg_tokens_per_success` · `avg_cost_per_success` · `invalid_action_rate` · `repeated_action_rate` · `grounding_accuracy` · `avg_latency_ms` · `avg_judge_tokens_per_trial` · `answer_consistency` · `classification_accuracy`
 
     Locking them is what makes a score comparable across platforms: if two platforms can redefine `pass_at_k`, the two numbers carry no shared meaning. A run may change *how* a built-in metric is computed where the specification allows it — the CI method, the aggregation method, the repetition count `k` — and every such choice is recorded in the run record.
 
@@ -388,6 +399,8 @@ The platform exposes a fixed catalogue of six scorer categories (J1–J6) and a 
     #### 4.2.0.3 Custom Metric Registration
 
     A task set, a project or an operator may register a metric that is not built in — for example "share of trials whose answer contains every required keyword", or "share of tasks whose answer length falls in the expected band". A registration is accepted only under the rules of 4.2.0.1.
+
+    The classification kinds `label_accuracy`, `label_precision`, `label_recall` and `label_f1` are available for registration; precision, recall and F1 take a `positive_label` parameter and read the `expected_label` and `predicted_label` evidence the `label_match` scorer records.
 
     A registered custom metric carries these additional constraints:
 
@@ -479,8 +492,9 @@ The metric registry ships with the M0 runtime. The built-in set is registered at
 
 ## References
 
-- Tech Design: [TD-003 Metric Registry and Scoring Contract][td-003]
-- Test Report: [TR-003 M0 Vertical Slice][tr-003], [TR-006 Report Collection Contract][tr-006] (the shape of the registry the client reads).
+- Tech Design: [TD-003 Metric Registry and Scoring Contract][td-003], [TD-008 Model Judge Scoring][td-008]
+- Test Report: [TR-003 M0 Vertical Slice][tr-003], [TR-006 Report Collection Contract][tr-006] (the shape of the registry the client reads), [TR-011 Model Judge Scoring][tr-011].
+- Implementation of J5: [FEAT-011 Model Judge Scoring][feat-011].
 - Source: Functional design chapter 04 — Scoring and Metrics.
 - Sibling design chapter cited by this document: [FEAT-002 Capability Taxonomy and Task System][feat-002] (cited as 2.1.1, 2.1.2, 2.1.3, and 2.5 for the decomposition dimensions).
 - Fix that changed what the registry publishes: [FIX-003 Report Null Collection Blanks the Report Screen][fix-003].
@@ -496,7 +510,10 @@ The metric registry ships with the M0 runtime. The built-in set is registered at
      with the template. -->
 
 [feat-002]: <../task-system/capability-taxonomy-and-task-system.md>
+[feat-011]: <./model-judge-scoring.md>
 [td-003]: <../../Tech Design/TD-003-metric-registry-and-scoring-contract.md>
+[td-008]: <../../Tech Design/TD-008-model-judge-scoring.md>
 [tr-003]: <../../Test Report/TR-003-m0-vertical-slice.md>
 [tr-006]: <../../Test Report/TR-006-report-collection-contract.md>
+[tr-011]: <../../Test Report/TR-011-model-judge-scoring.md>
 [fix-003]: <../../Fix/reporting/report-null-collection-blanks-the-report-screen.md>
